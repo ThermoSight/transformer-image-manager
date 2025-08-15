@@ -13,11 +13,11 @@ import {
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faExpand } from "@fortawesome/free-solid-svg-icons";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useAuth } from "../AuthContext";
-import LocationPicker from "./LocationPicker"; // <-- Import the new LocationPicker
+import LocationPicker from "./LocationPicker";
 
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -26,6 +26,19 @@ L.Icon.Default.mergeOptions({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
+
+// MapViewUpdater component to handle smooth map updates
+const MapViewUpdater = ({ center, zoom }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.setView(center, zoom);
+    }
+  }, [center, zoom, map]);
+
+  return null;
+};
 
 const ImageSetList = () => {
   const [sets, setSets] = useState([]);
@@ -46,18 +59,24 @@ const ImageSetList = () => {
 
   useEffect(() => {
     fetchSets();
-    // eslint-disable-next-line
-  }, []);
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+  }, [token]);
 
   const fetchSets = async () => {
     try {
+      setLoading(true);
       const response = await axios.get("http://localhost:8080/api/image-sets");
       setSets(response.data);
       setError("");
-      setLoading(false);
     } catch (err) {
-      setError("Failed to fetch image sets: " + err.message);
+      setError(
+        "Failed to fetch image sets: " +
+          (err.response?.data?.message || err.message)
+      );
       setSets([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -91,18 +110,21 @@ const ImageSetList = () => {
       const formData = new FormData();
       formData.append("name", editName);
       formData.append("locationName", editLocation?.name || "");
-      formData.append("locationLat", editLocation?.lat);
-      formData.append("locationLng", editLocation?.lng);
+      formData.append("locationLat", editLocation?.lat || "");
+      formData.append("locationLng", editLocation?.lng || "");
       formData.append("capacity", editCapacity);
 
       if (newImages.length > 0) {
-        newImages.forEach((file) => formData.append("images", file));
-        newImageTypes.forEach((type) => formData.append("types", type));
-        if (newImageTypes.some((type) => type === "Baseline")) {
-          newWeatherConditions.forEach((condition) =>
-            formData.append("weatherConditions", condition)
-          );
-        }
+        newImages.forEach((file, index) => {
+          formData.append("images", file);
+          formData.append("types", newImageTypes[index]);
+          if (newImageTypes[index] === "Baseline") {
+            formData.append(
+              "weatherConditions",
+              newWeatherConditions[index] || ""
+            );
+          }
+        });
       }
 
       const response = await axios.put(
@@ -116,15 +138,20 @@ const ImageSetList = () => {
         }
       );
 
-      setSets(
-        sets.map((set) => (set.id === currentSet.id ? response.data : set))
-      );
+      const updatedSet = {
+        ...response.data,
+        uploadedBy: currentSet.uploadedBy, // Preserve the original uploader
+      };
+
+      setSets(sets.map((set) => (set.id === currentSet.id ? updatedSet : set)));
       setShowEditModal(false);
       setNewImages([]);
       setNewImageTypes([]);
       setNewWeatherConditions([]);
     } catch (err) {
-      setError("Failed to update set: " + err.message);
+      setError(
+        "Failed to update set: " + (err.response?.data?.message || err.message)
+      );
     }
   };
 
@@ -138,7 +165,9 @@ const ImageSetList = () => {
       });
       setSets(sets.filter((set) => set.id !== id));
     } catch (err) {
-      setError("Failed to delete set: " + err.message);
+      setError(
+        "Failed to delete set: " + (err.response?.data?.message || err.message)
+      );
     }
   };
 
@@ -155,7 +184,10 @@ const ImageSetList = () => {
       );
       fetchSets();
     } catch (err) {
-      setError("Failed to delete image: " + err.message);
+      setError(
+        "Failed to delete image: " +
+          (err.response?.data?.message || err.message)
+      );
     }
   };
 
@@ -221,6 +253,13 @@ const ImageSetList = () => {
                               {set.locationName || "Image Set Location"}
                             </Popup>
                           </Marker>
+                          <MapViewUpdater
+                            center={[
+                              parseFloat(set.locationLat),
+                              parseFloat(set.locationLng),
+                            ]}
+                            zoom={13}
+                          />
                         </MapContainer>
                       </div>
                     )}
