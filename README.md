@@ -8,8 +8,6 @@
 - [ ] Implement image editing by **replacing existing images** and adding **new image upload** functionality.
 - [ ] Add Admin ID capability to manage access or permissions (e.g., restrict certain features to admin users).
 
-Sure! Here’s a clean, clear, and professional README snippet you can add to your repo, explaining the setup after cloning:
-
 ---
 
 # Project Setup Guide
