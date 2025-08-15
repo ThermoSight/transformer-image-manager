@@ -30,6 +30,10 @@ public class ImageSet {
     @JsonIgnoreProperties("imageSet")
     private List<Image> images;
 
+    @ManyToOne
+    @JoinColumn(name = "uploaded_by")
+    private Admin uploadedBy;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -85,5 +89,13 @@ public class ImageSet {
 
     public void setImages(List<Image> images) {
         this.images = images;
+    }
+
+    public Admin getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(Admin uploadedBy) {
+        this.uploadedBy = uploadedBy;
     }
 }

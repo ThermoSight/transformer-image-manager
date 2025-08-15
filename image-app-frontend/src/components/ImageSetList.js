@@ -16,6 +16,7 @@ import { faEdit, faTrash, faExpand } from "@fortawesome/free-solid-svg-icons";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useAuth } from "../AuthContext"; // <-- Import AuthContext
 
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -42,8 +43,11 @@ const ImageSetList = () => {
   const [newWeatherConditions, setNewWeatherConditions] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
+  const { token, isAuthenticated } = useAuth(); // <-- Use token/isAuthenticated
+
   useEffect(() => {
     fetchSets();
+    // eslint-disable-next-line
   }, []);
 
   const fetchSets = async () => {
@@ -106,6 +110,7 @@ const ImageSetList = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // <-- Add this
           },
         }
       );
@@ -125,7 +130,11 @@ const ImageSetList = () => {
   const handleDeleteSet = async (id) => {
     if (!window.confirm("Delete this image set and all images?")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/image-sets/${id}`);
+      await axios.delete(`http://localhost:8080/api/image-sets/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // <-- Add this
+        },
+      });
       setSets(sets.filter((set) => set.id !== id));
     } catch (err) {
       setError("Failed to delete set: " + err.message);
@@ -136,7 +145,12 @@ const ImageSetList = () => {
     if (!window.confirm("Delete this image?")) return;
     try {
       await axios.delete(
-        `http://localhost:8080/api/image-sets/images/${imageId}`
+        `http://localhost:8080/api/image-sets/images/${imageId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // <-- Add this
+          },
+        }
       );
       fetchSets();
     } catch (err) {
@@ -171,6 +185,10 @@ const ImageSetList = () => {
               <Row>
                 <Col md={9}>
                   <Card.Title>{set.name}</Card.Title>
+                  <Card.Text>
+                    <strong>Uploaded by:</strong>{" "}
+                    {set.uploadedBy?.displayName || "Unknown"}
+                  </Card.Text>
                   <Card.Text>
                     <strong>Location:</strong> {set.locationName || "N/A"}
                     {set.locationLat && set.locationLng && (
@@ -214,17 +232,21 @@ const ImageSetList = () => {
                   md={3}
                   className="d-flex align-items-start justify-content-end gap-2"
                 >
-                  <Button variant="primary" onClick={() => handleEdit(set)}>
-                    <FontAwesomeIcon icon={faEdit} className="me-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDeleteSet(set.id)}
-                  >
-                    <FontAwesomeIcon icon={faTrash} className="me-1" />
-                    Delete
-                  </Button>
+                  {isAuthenticated && (
+                    <>
+                      <Button variant="primary" onClick={() => handleEdit(set)}>
+                        <FontAwesomeIcon icon={faEdit} className="me-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteSet(set.id)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="me-1" />
+                        Delete
+                      </Button>
+                    </>
+                  )}
                 </Col>
               </Row>
               <ListGroup className="mt-3">
@@ -292,13 +314,15 @@ const ImageSetList = () => {
                           )}
                         </div>
                       </div>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDeleteImage(img.id)}
-                      >
-                        Delete
-                      </Button>
+                      {isAuthenticated && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDeleteImage(img.id)}
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </ListGroup.Item>
                   ))
                 ) : (
@@ -433,7 +457,12 @@ const ImageSetList = () => {
             <img
               src={`http://localhost:8080${previewImage.filePath}`}
               alt="Preview"
-              style={{ maxWidth: "100%", maxHeight: "70vh" }}
+              style={{
+                width: "90%",
+                height: "auto",
+                maxHeight: "90vh",
+                objectFit: "contain",
+              }}
             />
           )}
         </Modal.Body>

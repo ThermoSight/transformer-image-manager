@@ -1,7 +1,8 @@
 package com.example.imageapp.service;
 
-import com.example.imageapp.entity.ImageSet;
+import com.example.imageapp.entity.Admin;
 import com.example.imageapp.entity.Image;
+import com.example.imageapp.entity.ImageSet;
 import com.example.imageapp.repository.ImageSetRepository;
 import com.example.imageapp.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ImageSetService {
@@ -33,7 +35,8 @@ public class ImageSetService {
             Double locationLat,
             Double locationLng,
             String capacity,
-            List<ImageDTO> images) throws IOException {
+            List<ImageDTO> images,
+            Admin uploadedBy) throws IOException {
 
         ImageSet imageSet = new ImageSet();
         imageSet.setName(name);
@@ -41,6 +44,7 @@ public class ImageSetService {
         imageSet.setLocationLat(locationLat);
         imageSet.setLocationLng(locationLng);
         imageSet.setCapacity(capacity);
+        imageSet.setUploadedBy(uploadedBy);
 
         List<Image> imageEntities = new ArrayList<>();
         for (ImageDTO imgDto : images) {
@@ -66,6 +70,11 @@ public class ImageSetService {
 
     public List<ImageSet> getAllImageSets() {
         return imageSetRepository.findAll();
+    }
+
+    public ImageSet getImageSetById(Long id) {
+        return imageSetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Image set not found"));
     }
 
     public void deleteImageSet(Long id) throws IOException {
@@ -96,12 +105,6 @@ public class ImageSetService {
         imageRepository.deleteById(imageId);
     }
 
-    public static class ImageDTO {
-        public MultipartFile file;
-        public String type;
-        public String weatherCondition;
-    }
-
     public ImageSet updateImageSet(
             Long id,
             String name,
@@ -109,7 +112,8 @@ public class ImageSetService {
             Double locationLat,
             Double locationLng,
             String capacity,
-            List<ImageDTO> newImages) throws IOException {
+            List<ImageDTO> newImages,
+            Admin updatedBy) throws IOException {
 
         ImageSet imageSet = imageSetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Image set not found"));
@@ -124,6 +128,8 @@ public class ImageSetService {
             imageSet.setLocationLng(locationLng);
         if (capacity != null)
             imageSet.setCapacity(capacity);
+
+        imageSet.setUploadedBy(updatedBy);
 
         if (newImages != null && !newImages.isEmpty()) {
             // Delete existing images and their files
@@ -159,5 +165,11 @@ public class ImageSetService {
         }
 
         return imageSetRepository.save(imageSet);
+    }
+
+    public static class ImageDTO {
+        public MultipartFile file;
+        public String type;
+        public String weatherCondition;
     }
 }

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Button, Form, Card, Alert, Spinner, Row, Col } from "react-bootstrap";
 import LocationPicker from "./LocationPicker";
+import { useAuth } from "../AuthContext";
 
 const typeOptions = ["Baseline", "Maintenance"];
 const weatherOptions = ["Sunny", "Cloudy", "Rainy"];
@@ -83,7 +84,10 @@ const ImageSetUpload = ({ onUpload }) => {
 
     try {
       await axios.post("http://localhost:8080/api/image-sets", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
       setSuccess("Image set uploaded successfully!");
       setName("");
@@ -100,6 +104,8 @@ const ImageSetUpload = ({ onUpload }) => {
       setUploading(false);
     }
   };
+
+  const { token } = useAuth();
 
   return (
     <Card className="mb-4 shadow-sm">
