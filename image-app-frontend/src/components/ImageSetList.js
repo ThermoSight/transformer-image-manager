@@ -16,7 +16,8 @@ import { faEdit, faTrash, faExpand } from "@fortawesome/free-solid-svg-icons";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useAuth } from "../AuthContext"; // <-- Import AuthContext
+import { useAuth } from "../AuthContext";
+import LocationPicker from "./LocationPicker"; // <-- Import the new LocationPicker
 
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -34,16 +35,14 @@ const ImageSetList = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [currentSet, setCurrentSet] = useState(null);
   const [editName, setEditName] = useState("");
-  const [editLocationName, setEditLocationName] = useState("");
-  const [editLocationLat, setEditLocationLat] = useState("");
-  const [editLocationLng, setEditLocationLng] = useState("");
+  const [editLocation, setEditLocation] = useState(null);
   const [editCapacity, setEditCapacity] = useState("");
   const [newImages, setNewImages] = useState([]);
   const [newImageTypes, setNewImageTypes] = useState([]);
   const [newWeatherConditions, setNewWeatherConditions] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
-  const { token, isAuthenticated } = useAuth(); // <-- Use token/isAuthenticated
+  const { token, isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchSets();
@@ -66,9 +65,11 @@ const ImageSetList = () => {
   const handleEdit = (set) => {
     setCurrentSet(set);
     setEditName(set.name);
-    setEditLocationName(set.locationName || "");
-    setEditLocationLat(set.locationLat || "");
-    setEditLocationLng(set.locationLng || "");
+    setEditLocation({
+      name: set.locationName || "",
+      lat: set.locationLat || null,
+      lng: set.locationLng || null,
+    });
     setEditCapacity(set.capacity);
     setShowEditModal(true);
   };
@@ -89,9 +90,9 @@ const ImageSetList = () => {
     try {
       const formData = new FormData();
       formData.append("name", editName);
-      formData.append("locationName", editLocationName);
-      formData.append("locationLat", editLocationLat);
-      formData.append("locationLng", editLocationLng);
+      formData.append("locationName", editLocation?.name || "");
+      formData.append("locationLat", editLocation?.lat);
+      formData.append("locationLng", editLocation?.lng);
       formData.append("capacity", editCapacity);
 
       if (newImages.length > 0) {
@@ -110,7 +111,7 @@ const ImageSetList = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // <-- Add this
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -132,7 +133,7 @@ const ImageSetList = () => {
     try {
       await axios.delete(`http://localhost:8080/api/image-sets/${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // <-- Add this
+          Authorization: `Bearer ${token}`,
         },
       });
       setSets(sets.filter((set) => set.id !== id));
@@ -148,7 +149,7 @@ const ImageSetList = () => {
         `http://localhost:8080/api/image-sets/images/${imageId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // <-- Add this
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -356,27 +357,10 @@ const ImageSetList = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Location Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={editLocationName}
-                onChange={(e) => setEditLocationName(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Location Latitude</Form.Label>
-              <Form.Control
-                type="number"
-                value={editLocationLat}
-                onChange={(e) => setEditLocationLat(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Location Longitude</Form.Label>
-              <Form.Control
-                type="number"
-                value={editLocationLng}
-                onChange={(e) => setEditLocationLng(e.target.value)}
+              <Form.Label>Location</Form.Label>
+              <LocationPicker
+                value={editLocation}
+                onChange={(newLocation) => setEditLocation(newLocation)}
               />
             </Form.Group>
             <Form.Group className="mb-3">
