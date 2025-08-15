@@ -88,3 +88,55 @@
     min-height: 150px;
   }
 }
+
+.hover-show {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.hover-show:hover {
+  opacity: 1;
+}
+
+.image-upload-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px; /* space between buttons */
+  margin-bottom: 16px;
+}
+
+/* OSM Map Styles */
+.osm-map-preview {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.leaflet-container {
+  background-color: #f8f9fa;
+}
+
+/* Adjust the Card layout to accommodate the map */
+.card-text {
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments for the map */
+@media (max-width: 768px) {
+  .osm-map-preview {
+    height: 120px;
+  }
+}
+
+/* Fix for leaflet images */
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  display: block;
+}
+
+/* Fix for popup close button */
+.leaflet-container a.leaflet-popup-close-button {
+  padding: 4px 4px 0 0;
+  color: #555;
+}

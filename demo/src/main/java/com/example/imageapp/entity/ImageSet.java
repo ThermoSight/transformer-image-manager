@@ -1,0 +1,89 @@
+package com.example.imageapp.entity;
+
+import jakarta.persistence.*;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@Entity
+@Table(name = "image_sets")
+public class ImageSet {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column
+    private String locationName;
+
+    @Column
+    private Double locationLat;
+
+    @Column
+    private Double locationLng;
+
+    @Column
+    private String capacity;
+
+    @OneToMany(mappedBy = "imageSet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("imageSet")
+    private List<Image> images;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public Double getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(Double locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public Double getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(Double locationLng) {
+        this.locationLng = locationLng;
+    }
+
+    public String getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(String capacity) {
+        this.capacity = capacity;
+    }
+
+    public List<Image> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Image> images) {
+        this.images = images;
+    }
+}
