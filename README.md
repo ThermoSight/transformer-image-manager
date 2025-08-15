@@ -34,7 +34,11 @@ spring.datasource.password=your_real_password_here
 
 4. Run the backend application:
 
-- Using your IDE, run the `DemoApplication.java` class
+- Using your IDE, run the `DemoApplication.java` file located at:
+
+```
+demo/src/main/java/com/example/imageapp/DemoApplication.java
+```
 
 ---
 
@@ -64,9 +68,9 @@ npm start
 
 ## Summary
 
-| Component | Location             | Start Command                                          |
-| --------- | -------------------- | ------------------------------------------------------ |
-| Backend   | `demo`               | Run `DemoApplication.java` or `./mvnw spring-boot:run` |
-| Frontend  | `image-app-frontend` | `npm install` then `npm start`                         |
+| Component | Location             | Start Command                  |
+| --------- | -------------------- | ------------------------------ |
+| Backend   | `demo`               | Run `DemoApplication.java` or  |
+| Frontend  | `image-app-frontend` | `npm install` then `npm start` |
 
 ---
