@@ -19,7 +19,12 @@ const MoodleNavbar = () => {
   };
 
   return (
-    <Navbar bg="primary" variant="dark" expand="lg" className="moodle-navbar">
+    <Navbar
+      bg="primary"
+      variant="dark"
+      expand="lg"
+      className="moodle-navbar sticky-top"
+    >
       <Container fluid>
         <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
           <img src="/logo.png" alt="Logo" height="30" className="me-2" />

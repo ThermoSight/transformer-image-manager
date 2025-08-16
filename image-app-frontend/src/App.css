@@ -13,16 +13,21 @@
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f5f5f5;
+  padding-top: 60px;
 }
 
 .main-container {
   padding: 20px;
-  margin-top: 20px;
 }
 
 .moodle-navbar {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.5rem 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
 }
 
 .moodle-navbar .navbar-brand {
