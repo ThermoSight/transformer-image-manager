@@ -203,8 +203,12 @@ const LocationPicker = ({ value, onChange }) => {
           </Form.Group>
           <div style={{ height: 350, marginBottom: 12, position: "relative" }}>
             <MapContainer
-              center={value ? [value.lat, value.lng] : [20, 0]}
-              zoom={value ? 12 : 2}
+              center={
+                value
+                  ? [value.lat, value.lng]
+                  : [8.031477629198994, 80.75701690636198]
+              }
+              zoom={value ? 12 : 7}
               style={{ height: "100%", width: "100%" }}
             >
               <TileLayer
