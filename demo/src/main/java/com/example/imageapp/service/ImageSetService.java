@@ -129,7 +129,7 @@ public class ImageSetService {
         if (capacity != null)
             imageSet.setCapacity(capacity);
 
-        imageSet.setUploadedBy(updatedBy);
+        // imageSet.setUploadedBy(updatedBy);
 
         if (newImages != null && !newImages.isEmpty()) {
             // Delete existing images and their files

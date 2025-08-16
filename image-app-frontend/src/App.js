@@ -6,8 +6,9 @@ import { AuthProvider } from "./AuthContext";
 import Login from "./Login";
 import ImageSetUpload from "./components/ImageSetUpload";
 import ImageSetList from "./components/ImageSetList";
+import ImageSetDetail from "./components/ImageSetDetail";
 import ProtectedRoute from "./ProtectedRoute";
-import Navbar from "./components/Navbar";
+import MoodleNavbar from "./components/MoodleNavbar";
 import "./App.css";
 
 function App() {
@@ -20,21 +21,31 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Navbar />
-        <Container className="py-4">
+        <MoodleNavbar />
+        <Container fluid className="main-container">
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route
               path="/"
               element={
                 <ProtectedRoute>
-                  <>
-                    <h1 className="mb-4 text-center">
-                      <span className="text-primary">Image</span> Gallery App
-                    </h1>
-                    <ImageSetUpload onUpload={handleUpload} />
-                    <ImageSetList key={refresh} />
-                  </>
+                  <ImageSetList key={refresh} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upload"
+              element={
+                <ProtectedRoute>
+                  <ImageSetUpload onUpload={handleUpload} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sets/:id"
+              element={
+                <ProtectedRoute>
+                  <ImageSetDetail />
                 </ProtectedRoute>
               }
             />

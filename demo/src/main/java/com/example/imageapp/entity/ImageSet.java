@@ -1,7 +1,13 @@
 package com.example.imageapp.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -33,6 +39,11 @@ public class ImageSet {
     @ManyToOne
     @JoinColumn(name = "uploaded_by")
     private Admin uploadedBy;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
 
     // Getters and Setters
     public Long getId() {
@@ -97,5 +108,13 @@ public class ImageSet {
 
     public void setUploadedBy(Admin uploadedBy) {
         this.uploadedBy = uploadedBy;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

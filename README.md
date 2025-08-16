@@ -6,6 +6,7 @@
 
 - [ ] Allow uploading **multiple baseline images** (currently limited to only one).
 - [ ] Implement image editing by **replacing existing images** and adding **new image upload** functionality.
+- [] Use the filters, stars and paginations in dashbord.
 
 ---
 
@@ -67,9 +68,9 @@ npm start
 
 ## Summary
 
-| Component | Location             | Start Command                                          |
-| --------- | -------------------- | ------------------------------------------------------ |
-| Backend   | `demo`               | Run `DemoApplication.java` or `./mvnw spring-boot:run` |
-| Frontend  | `image-app-frontend` | `npm install` then `npm start`                         |
+| Component | Location             | Start Command                  |
+| --------- | -------------------- | ------------------------------ |
+| Backend   | `demo`               | Run `DemoApplication.java`     |
+| Frontend  | `image-app-frontend` | `npm install` then `npm start` |
 
 ---

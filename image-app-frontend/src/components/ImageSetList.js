@@ -3,65 +3,41 @@ import axios from "axios";
 import {
   Card,
   Button,
-  ListGroup,
+  Table,
   Spinner,
   Alert,
   Row,
   Col,
   Modal,
-  Form,
+  Badge,
+  Pagination,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faExpand } from "@fortawesome/free-solid-svg-icons";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import {
+  faEye,
+  faTrash,
+  faEdit,
+  faPlus,
+  faMapMarkerAlt,
+  faImages,
+} from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import LocationPicker from "./LocationPicker";
-
-// Fix for default marker icons in Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
-});
-
-// MapViewUpdater component to handle smooth map updates
-const MapViewUpdater = ({ center, zoom }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (center && center[0] && center[1]) {
-      map.setView(center, zoom);
-    }
-  }, [center, zoom, map]);
-
-  return null;
-};
 
 const ImageSetList = () => {
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [currentSet, setCurrentSet] = useState(null);
-  const [editName, setEditName] = useState("");
-  const [editLocation, setEditLocation] = useState(null);
-  const [editCapacity, setEditCapacity] = useState("");
-  const [newImages, setNewImages] = useState([]);
-  const [newImageTypes, setNewImageTypes] = useState([]);
-  const [newWeatherConditions, setNewWeatherConditions] = useState([]);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [setToDelete, setSetToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
+  const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchSets();
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
   }, [token]);
 
   const fetchSets = async () => {
@@ -71,424 +47,187 @@ const ImageSetList = () => {
       setSets(response.data);
       setError("");
     } catch (err) {
-      setError(
-        "Failed to fetch image sets: " +
-          (err.response?.data?.message || err.message)
-      );
+      setError("Failed to fetch image sets");
       setSets([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (set) => {
-    setCurrentSet(set);
-    setEditName(set.name);
-    setEditLocation({
-      name: set.locationName || "",
-      lat: set.locationLat || null,
-      lng: set.locationLng || null,
-    });
-    setEditCapacity(set.capacity);
-    setShowEditModal(true);
-  };
-
-  const handlePreview = (image) => {
-    setPreviewImage(image);
-    setShowPreviewModal(true);
-  };
-
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setNewImages(files);
-    setNewImageTypes(files.map(() => "Maintenance"));
-    setNewWeatherConditions(files.map(() => ""));
-  };
-
-  const handleUpdate = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("name", editName);
-      formData.append("locationName", editLocation?.name || "");
-      formData.append("locationLat", editLocation?.lat || "");
-      formData.append("locationLng", editLocation?.lng || "");
-      formData.append("capacity", editCapacity);
-
-      if (newImages.length > 0) {
-        newImages.forEach((file, index) => {
-          formData.append("images", file);
-          formData.append("types", newImageTypes[index]);
-          if (newImageTypes[index] === "Baseline") {
-            formData.append(
-              "weatherConditions",
-              newWeatherConditions[index] || ""
-            );
-          }
-        });
-      }
-
-      const response = await axios.put(
-        `http://localhost:8080/api/image-sets/${currentSet.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const updatedSet = {
-        ...response.data,
-        uploadedBy: currentSet.uploadedBy, // Preserve the original uploader
-      };
-
-      setSets(sets.map((set) => (set.id === currentSet.id ? updatedSet : set)));
-      setShowEditModal(false);
-      setNewImages([]);
-      setNewImageTypes([]);
-      setNewWeatherConditions([]);
-    } catch (err) {
-      setError(
-        "Failed to update set: " + (err.response?.data?.message || err.message)
-      );
-    }
-  };
-
-  const handleDeleteSet = async (id) => {
-    if (!window.confirm("Delete this image set and all images?")) return;
+  const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8080/api/image-sets/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setSets(sets.filter((set) => set.id !== id));
-    } catch (err) {
-      setError(
-        "Failed to delete set: " + (err.response?.data?.message || err.message)
-      );
-    }
-  };
-
-  const handleDeleteImage = async (imageId) => {
-    if (!window.confirm("Delete this image?")) return;
-    try {
-      await axios.delete(
-        `http://localhost:8080/api/image-sets/images/${imageId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
       fetchSets();
     } catch (err) {
-      setError(
-        "Failed to delete image: " +
-          (err.response?.data?.message || err.message)
-      );
+      setError("Failed to delete set");
+    } finally {
+      setShowDeleteModal(false);
     }
   };
 
-  if (loading)
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sets.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sets.length / itemsPerPage);
+
+  if (loading) {
     return (
       <div className="text-center mt-5">
-        <Spinner animation="border" />
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-2">Loading image sets...</p>
       </div>
     );
-  if (error)
+  }
+
+  if (error) {
     return (
-      <Alert variant="danger" dismissible onClose={() => setError("")}>
+      <Alert variant="danger" className="mt-4">
         {error}
       </Alert>
     );
+  }
 
   return (
-    <div>
-      <h2 className="mb-4">Image Sets</h2>
-      {sets.length === 0 ? (
-        <Card>
-          <Card.Body>No image sets.</Card.Body>
-        </Card>
-      ) : (
-        sets.map((set) => (
-          <Card key={set.id} className="mb-4 shadow-sm">
-            <Card.Body>
-              <Row>
-                <Col md={9}>
-                  <Card.Title>{set.name}</Card.Title>
-                  <Card.Text>
-                    <strong>Uploaded by:</strong>{" "}
-                    {set.uploadedBy?.displayName || "Unknown"}
-                  </Card.Text>
-                  <Card.Text>
-                    <strong>Location:</strong> {set.locationName || "N/A"}
-                    {set.locationLat && set.locationLng && (
-                      <div className="osm-map-preview mt-2">
-                        <MapContainer
-                          center={[
-                            parseFloat(set.locationLat),
-                            parseFloat(set.locationLng),
-                          ]}
-                          zoom={13}
-                          scrollWheelZoom={false}
-                          style={{
-                            height: "150px",
-                            width: "100%",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          />
-                          <Marker
-                            position={[
-                              parseFloat(set.locationLat),
-                              parseFloat(set.locationLng),
-                            ]}
-                          >
-                            <Popup>
-                              {set.locationName || "Image Set Location"}
-                            </Popup>
-                          </Marker>
-                          <MapViewUpdater
-                            center={[
-                              parseFloat(set.locationLat),
-                              parseFloat(set.locationLng),
-                            ]}
-                            zoom={13}
-                          />
-                        </MapContainer>
-                      </div>
-                    )}
-                  </Card.Text>
-                  <Card.Text>
-                    <strong>Capacity:</strong> {set.capacity}
-                  </Card.Text>
-                </Col>
-                <Col
-                  md={3}
-                  className="d-flex align-items-start justify-content-end gap-2"
-                >
-                  {isAuthenticated && (
-                    <>
-                      <Button variant="primary" onClick={() => handleEdit(set)}>
-                        <FontAwesomeIcon icon={faEdit} className="me-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDeleteSet(set.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} className="me-1" />
-                        Delete
-                      </Button>
-                    </>
-                  )}
-                </Col>
-              </Row>
-              <ListGroup className="mt-3">
-                {set.images && set.images.length > 0 ? (
-                  set.images.map((img) => (
-                    <ListGroup.Item
-                      key={img.id}
-                      className="d-flex align-items-center justify-content-between"
-                    >
-                      <div className="d-flex align-items-center">
-                        <div
-                          style={{
-                            cursor: "pointer",
-                            marginRight: 15,
-                            position: "relative",
-                          }}
-                          onClick={() => handlePreview(img)}
-                        >
-                          <img
-                            src={`http://localhost:8080${img.filePath}`}
-                            alt=""
-                            style={{
-                              height: 80,
-                              width: "auto",
-                              objectFit: "cover",
-                              borderRadius: "4px",
-                              border: "1px solid #eee",
-                            }}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src =
-                                "https://via.placeholder.com/80x80?text=No+Image";
-                            }}
-                          />
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              opacity: 0,
-                              backgroundColor: "rgba(0,0,0,0.5)",
-                              transition: "opacity 0.3s",
-                              color: "white",
-                            }}
-                            className="hover-show"
-                          >
-                            <FontAwesomeIcon icon={faExpand} />
-                          </div>
-                        </div>
-                        <div>
-                          <strong>Type:</strong> {img.type}
-                          {img.type === "Baseline" && (
-                            <span>
-                              {" "}
-                              <strong>Weather:</strong>{" "}
-                              {img.weatherCondition || (
-                                <span className="text-muted">N/A</span>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {isAuthenticated && (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDeleteImage(img.id)}
-                        >
-                          Delete
-                        </Button>
-                      )}
-                    </ListGroup.Item>
-                  ))
-                ) : (
-                  <ListGroup.Item className="text-muted">
-                    No images in this set.
-                  </ListGroup.Item>
-                )}
-              </ListGroup>
-            </Card.Body>
-          </Card>
-        ))
-      )}
+    <div className="moodle-container">
+      <div className="page-header">
+        <h2>Image Sets</h2>
+        {isAuthenticated && (
+          <Button variant="primary" onClick={() => navigate("/upload")}>
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Add New Set
+          </Button>
+        )}
+      </div>
 
-      {/* Edit Modal */}
-      <Modal
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
-        size="lg"
-      >
+      <Card className="mb-4">
+        <Card.Body>
+          {sets.length === 0 ? (
+            <div className="text-center py-4">
+              <FontAwesomeIcon
+                icon={faImages}
+                size="3x"
+                className="text-muted mb-3"
+              />
+              <p>No image sets found</p>
+            </div>
+          ) : (
+            <>
+              <Table striped hover responsive className="moodle-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Images</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentItems.map((set) => (
+                    <tr key={set.id}>
+                      <td>{set.name}</td>
+                      <td>
+                        {set.locationName && (
+                          <>
+                            <FontAwesomeIcon
+                              icon={faMapMarkerAlt}
+                              className="me-2 text-muted"
+                            />
+                            {set.locationName
+                              .split(",")
+                              .slice(0, 3)
+                              .map((part) => part.trim())
+                              .join(", ")}
+                          </>
+                        )}
+                      </td>
+                      <td>
+                        <Badge bg="info">{set.images?.length || 0}</Badge>
+                      </td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => navigate(`/sets/${set.id}`)}
+                          className="me-2"
+                        >
+                          <FontAwesomeIcon icon={faEye} />
+                        </Button>
+                        {isAuthenticated && (
+                          <>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => navigate(`/upload?edit=${set.id}`)}
+                              className="me-2"
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => {
+                                setSetToDelete(set.id);
+                                setShowDeleteModal(true);
+                              }}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </Button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+
+              {totalPages > 1 && (
+                <div className="d-flex justify-content-center">
+                  <Pagination>
+                    <Pagination.Prev
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                    />
+                    {[...Array(totalPages).keys()].map((number) => (
+                      <Pagination.Item
+                        key={number + 1}
+                        active={number + 1 === currentPage}
+                        onClick={() => setCurrentPage(number + 1)}
+                      >
+                        {number + 1}
+                      </Pagination.Item>
+                    ))}
+                    <Pagination.Next
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                    />
+                  </Pagination>
+                </div>
+              )}
+            </>
+          )}
+        </Card.Body>
+      </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Image Set</Modal.Title>
+          <Modal.Title>Confirm Deletion</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Location</Form.Label>
-              <LocationPicker
-                value={editLocation}
-                onChange={(newLocation) => setEditLocation(newLocation)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Capacity</Form.Label>
-              <Form.Control
-                type="text"
-                value={editCapacity}
-                onChange={(e) => setEditCapacity(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Add New Images (Optional)</Form.Label>
-              <Form.Control
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-            </Form.Group>
-            {newImages.length > 0 && (
-              <div className="mb-3">
-                <h6>New Image Types:</h6>
-                {newImages.map((img, index) => (
-                  <div key={index} className="mb-2">
-                    <p>{img.name}</p>
-                    <Form.Select
-                      value={newImageTypes[index]}
-                      onChange={(e) => {
-                        const updatedTypes = [...newImageTypes];
-                        updatedTypes[index] = e.target.value;
-                        setNewImageTypes(updatedTypes);
-                      }}
-                    >
-                      <option value="Maintenance">Maintenance</option>
-                      <option value="Baseline">Baseline</option>
-                    </Form.Select>
-                    {newImageTypes[index] === "Baseline" && (
-                      <Form.Control
-                        type="text"
-                        placeholder="Weather condition"
-                        value={newWeatherConditions[index]}
-                        onChange={(e) => {
-                          const updatedConditions = [...newWeatherConditions];
-                          updatedConditions[index] = e.target.value;
-                          setNewWeatherConditions(updatedConditions);
-                        }}
-                        className="mt-2"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </Form>
+          Are you sure you want to delete this image set? This action cannot be
+          undone.
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleUpdate}>
-            Save Changes
+          <Button variant="danger" onClick={() => handleDelete(setToDelete)}>
+            Delete
           </Button>
         </Modal.Footer>
-      </Modal>
-
-      {/* Preview Modal */}
-      <Modal
-        show={showPreviewModal}
-        onHide={() => setShowPreviewModal(false)}
-        size="lg"
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Image Preview</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="text-center">
-          {previewImage && (
-            <img
-              src={`http://localhost:8080${previewImage.filePath}`}
-              alt="Preview"
-              style={{
-                width: "90%",
-                height: "auto",
-                maxHeight: "90vh",
-                objectFit: "contain",
-              }}
-            />
-          )}
-        </Modal.Body>
       </Modal>
     </div>
   );
