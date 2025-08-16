@@ -129,21 +129,10 @@ public class ImageSetService {
         if (capacity != null)
             imageSet.setCapacity(capacity);
 
-        // imageSet.setUploadedBy(updatedBy);
-
         if (newImages != null && !newImages.isEmpty()) {
-            // Delete existing images and their files
-            for (Image image : imageSet.getImages()) {
-                try {
-                    Path filePath = Paths.get(uploadDirectory, image.getFilePath().replace("/uploads/", ""));
-                    Files.deleteIfExists(filePath);
-                } catch (Exception ignore) {
-                }
-                imageRepository.delete(image);
-            }
+            // Add new images without deleting existing ones
+            List<Image> imageEntities = imageSet.getImages();
 
-            // Add new images
-            List<Image> imageEntities = new ArrayList<>();
             for (ImageDTO imgDto : newImages) {
                 String fileName = System.currentTimeMillis() + "_" + imgDto.file.getOriginalFilename();
                 Path uploadPath = Paths.get(uploadDirectory);
@@ -160,8 +149,6 @@ public class ImageSetService {
 
                 imageEntities.add(image);
             }
-
-            imageSet.setImages(imageEntities);
         }
 
         return imageSetRepository.save(imageSet);

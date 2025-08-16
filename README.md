@@ -4,9 +4,7 @@
 
 ## To Do
 
-- [ ] Allow uploading **multiple baseline images** (currently limited to only one).
-- [ ] Implement image editing by **replacing existing images** and adding **new image upload** functionality.
-- [] Use the filters, stars and paginations in dashbord.
+- [ ] I think all done for phase 1.
 
 ---
 

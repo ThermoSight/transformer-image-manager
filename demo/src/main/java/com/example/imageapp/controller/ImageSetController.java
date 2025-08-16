@@ -95,24 +95,25 @@ public class ImageSetController {
             @RequestParam(value = "locationLat", required = false) Double locationLat,
             @RequestParam(value = "locationLng", required = false) Double locationLng,
             @RequestParam(value = "capacity", required = false) String capacity,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "types", required = false) List<String> types,
-            @RequestParam(value = "weatherConditions", required = false) List<String> weatherConditions,
+            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(value = "types", required = false) String[] types,
+            @RequestParam(value = "weatherConditions", required = false) String[] weatherConditions,
             Principal principal) throws IOException {
 
         Admin admin = adminRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
         List<ImageDTO> imageDTOs = null;
-        if (images != null && types != null) {
+        if (images != null && types != null && images.length > 0) {
             imageDTOs = new ArrayList<>();
-            for (int i = 0; i < images.size(); i++) {
+            for (int i = 0; i < images.length; i++) {
                 ImageDTO dto = new ImageDTO();
-                dto.file = images.get(i);
-                dto.type = types.get(i);
-                dto.weatherCondition = (dto.type.equals("Baseline") && weatherConditions != null)
-                        ? weatherConditions.get(i)
-                        : null;
+                dto.file = images[i];
+                dto.type = types[i];
+                dto.weatherCondition = (dto.type.equals("Baseline") && weatherConditions != null
+                        && i < weatherConditions.length)
+                                ? weatherConditions[i]
+                                : null;
                 imageDTOs.add(dto);
             }
         }

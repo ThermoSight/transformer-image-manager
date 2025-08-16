@@ -174,12 +174,6 @@ const ImageSetUpload = ({ onUpload }) => {
       return;
     }
 
-    // Only validate new images, existing ones don't need validation
-    if (formData.images.some((img) => !img.file)) {
-      setError("Please select files for all new images");
-      return;
-    }
-
     setLoading(true);
     setError("");
     setSuccess("");
@@ -192,39 +186,45 @@ const ImageSetUpload = ({ onUpload }) => {
       data.append("locationLng", formData.location?.lng || "");
       data.append("capacity", formData.capacity);
 
-      // Add new images
-      formData.images.forEach((img) => {
-        data.append("images", img.file);
-        data.append("types", img.type);
-        data.append("weatherConditions", img.weatherCondition || "");
+      // Add new images with their types and weather conditions
+      formData.images.forEach((img, index) => {
+        if (img.file) {
+          data.append("images", img.file);
+          data.append("types", img.type);
+          if (img.type === "Baseline") {
+            data.append("weatherConditions", img.weatherCondition || "Sunny");
+          }
+        }
       });
+
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
       if (editId) {
         await axios.put(
           `http://localhost:8080/api/image-sets/${editId}`,
           data,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          config
         );
         setSuccess("Image set updated successfully!");
       } else {
-        await axios.post("http://localhost:8080/api/image-sets", data, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axios.post("http://localhost:8080/api/image-sets", data, config);
         setSuccess("Image set uploaded successfully!");
       }
 
       if (onUpload) onUpload();
       setTimeout(() => navigate("/"), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to process request");
+      console.error("Error details:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to process request"
+      );
     } finally {
       setLoading(false);
     }
