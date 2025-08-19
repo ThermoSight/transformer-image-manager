@@ -14,6 +14,7 @@ import {
   Form,
   InputGroup,
   Dropdown,
+  ButtonGroup,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -26,6 +27,10 @@ import {
   faSearch,
   faFilter,
   faSort,
+  faCalendarAlt,
+  faUser,
+  faList,
+  faThLarge,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -38,7 +43,7 @@ const ImageSetList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [setToDelete, setSetToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(6); // Changed to 6 per requirement
+  const [itemsPerPage] = useState(6);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("name");
   const [sortConfig, setSortConfig] = useState({
@@ -46,6 +51,7 @@ const ImageSetList = () => {
     direction: "desc",
   });
   const [capacityFilter, setCapacityFilter] = useState("all");
+  const [viewMode, setViewMode] = useState("cards"); // 'cards' or 'table'
 
   const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
@@ -170,12 +176,30 @@ const ImageSetList = () => {
     <div className="moodle-container">
       <div className="page-header">
         <h2>Image Sets</h2>
-        {isAuthenticated && (
-          <Button variant="primary" onClick={() => navigate("/upload")}>
-            <FontAwesomeIcon icon={faPlus} className="me-2" />
-            Add New Set
-          </Button>
-        )}
+        <div className="d-flex align-items-center">
+          <ButtonGroup className="me-3">
+            <Button
+              variant={viewMode === "cards" ? "primary" : "outline-secondary"}
+              onClick={() => setViewMode("cards")}
+              size="sm"
+            >
+              <FontAwesomeIcon icon={faThLarge} />
+            </Button>
+            <Button
+              variant={viewMode === "table" ? "primary" : "outline-secondary"}
+              onClick={() => setViewMode("table")}
+              size="sm"
+            >
+              <FontAwesomeIcon icon={faList} />
+            </Button>
+          </ButtonGroup>
+          {isAuthenticated && (
+            <Button variant="primary" onClick={() => navigate("/upload")}>
+              <FontAwesomeIcon icon={faPlus} className="me-2" />
+              Add New Set
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
@@ -264,30 +288,30 @@ const ImageSetList = () => {
         </Card.Body>
       </Card>
 
-      <Card className="mb-4">
-        <Card.Body>
-          {filteredSets.length === 0 ? (
-            <div className="text-center py-4">
-              <FontAwesomeIcon
-                icon={faImages}
-                size="3x"
-                className="text-muted mb-3"
-              />
-              <p>No image sets found</p>
-              {searchTerm && (
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setCapacityFilter("all");
-                  }}
-                >
-                  Clear filters
-                </Button>
-              )}
-            </div>
-          ) : (
-            <>
+      {filteredSets.length === 0 ? (
+        <div className="text-center py-4">
+          <FontAwesomeIcon
+            icon={faImages}
+            size="3x"
+            className="text-muted mb-3"
+          />
+          <p>No image sets found</p>
+          {searchTerm && (
+            <Button
+              variant="link"
+              onClick={() => {
+                setSearchTerm("");
+                setCapacityFilter("all");
+              }}
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+      ) : viewMode === "table" ? (
+        <>
+          <Card className="mb-4">
+            <Card.Body>
               <Table striped hover responsive className="moodle-table">
                 <thead>
                   <tr>
@@ -377,59 +401,153 @@ const ImageSetList = () => {
                   ))}
                 </tbody>
               </Table>
+            </Card.Body>
+          </Card>
+        </>
+      ) : (
+        <>
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {currentItems.map((set) => (
+              <Col key={set.id}>
+                <Card className="h-100 bg-light">
+                  <Card.Body>
+                    <Card.Title className="d-flex justify-content-between align-items-start">
+                      {set.name}
+                      <Badge
+                        bg={
+                          set.capacity < 50
+                            ? "info"
+                            : set.capacity < 200
+                            ? "primary"
+                            : "success"
+                        }
+                        className="ms-2"
+                      >
+                        {set.capacity || 0}
+                      </Badge>
+                    </Card.Title>
 
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <Pagination>
-                    <Pagination.First
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                    />
-                    <Pagination.Prev
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    />
-                    {[...Array(totalPages).keys()].map((number) => {
-                      const page = number + 1;
-                      // Show only first, last, and pages around current
-                      if (
-                        page === 1 ||
-                        page === totalPages ||
-                        (page >= currentPage - 1 && page <= currentPage + 1)
-                      ) {
-                        return (
-                          <Pagination.Item
-                            key={page}
-                            active={page === currentPage}
-                            onClick={() => setCurrentPage(page)}
-                          >
-                            {page}
-                          </Pagination.Item>
-                        );
-                      } else if (
-                        (page === currentPage - 2 && currentPage > 3) ||
-                        (page === currentPage + 2 &&
-                          currentPage < totalPages - 2)
-                      ) {
-                        return <Pagination.Ellipsis key={page} />;
-                      }
-                      return null;
-                    })}
-                    <Pagination.Next
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    />
-                    <Pagination.Last
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                    />
-                  </Pagination>
-                </div>
-              )}
-            </>
-          )}
-        </Card.Body>
-      </Card>
+                    {set.locationName && (
+                      <Card.Text className="text-muted mb-2">
+                        <FontAwesomeIcon
+                          icon={faMapMarkerAlt}
+                          className="me-2"
+                        />
+                        {set.locationName
+                          .split(",")
+                          .slice(0, 3)
+                          .map((part) => part.trim())
+                          .join(", ")}
+                      </Card.Text>
+                    )}
+
+                    <div className="d-flex justify-content-between text-muted mb-3">
+                      <small>
+                        <FontAwesomeIcon icon={faUser} className="me-2" />
+                        {set.uploadedBy?.displayName || "Unknown"}
+                      </small>
+                      <small>
+                        <FontAwesomeIcon
+                          icon={faCalendarAlt}
+                          className="me-2"
+                        />
+                        {new Date(set.createdAt).toLocaleDateString()}
+                      </small>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Badge bg="secondary">
+                        {set.images?.length || 0} images
+                      </Badge>
+
+                      <div>
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => navigate(`/sets/${set.id}`)}
+                          className="me-2"
+                        >
+                          <FontAwesomeIcon icon={faEye} />
+                        </Button>
+                        {isAuthenticated && (
+                          <>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => navigate(`/upload?edit=${set.id}`)}
+                              className="me-2"
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => {
+                                setSetToDelete(set.id);
+                                setShowDeleteModal(true);
+                              }}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </>
+      )}
+
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <Pagination>
+            <Pagination.First
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            />
+            <Pagination.Prev
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            />
+            {[...Array(totalPages).keys()].map((number) => {
+              const page = number + 1;
+              // Show only first, last, and pages around current
+              if (
+                page === 1 ||
+                page === totalPages ||
+                (page >= currentPage - 1 && page <= currentPage + 1)
+              ) {
+                return (
+                  <Pagination.Item
+                    key={page}
+                    active={page === currentPage}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Pagination.Item>
+                );
+              } else if (
+                (page === currentPage - 2 && currentPage > 3) ||
+                (page === currentPage + 2 && currentPage < totalPages - 2)
+              ) {
+                return <Pagination.Ellipsis key={page} />;
+              }
+              return null;
+            })}
+            <Pagination.Next
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            />
+            <Pagination.Last
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            />
+          </Pagination>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

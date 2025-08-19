@@ -220,7 +220,7 @@ const ImageSetDetail = () => {
                             fluid
                             style={{ height: "180px", objectFit: "cover" }}
                           />
-                          {isAuthenticated && (
+                          {/* {isAuthenticated && (
                             <Button
                               variant="danger"
                               size="sm"
@@ -236,7 +236,7 @@ const ImageSetDetail = () => {
                             >
                               <FontAwesomeIcon icon={faTrash} />
                             </Button>
-                          )}
+                          )} */}
                         </div>
                         <Card.Body>
                           <strong>Type:</strong> {image.type}
