@@ -4,7 +4,7 @@
 
 ## To Do
 
-- [ ] I think all done for phase 1.
+- [ ]
 
 ---
 
@@ -19,7 +19,7 @@
 1. Navigate to the backend directory:
 
 ```bash
-cd demo
+cd transformer-manager-backkend
 ```
 
 2. Open `src/main/resources/application.properties`.
@@ -32,10 +32,10 @@ spring.datasource.password=your_real_password_here
 
 4. Run the backend application:
 
-- Using your IDE, run the `DemoApplication.java` file located at:
+- Using your IDE, run the `TransformerManagerBackkendApplication.java` file located at:
 
 ```
-demo/src/main/java/com/example/imageapp/DemoApplication.java
+transformer-manager-backkend/src/main/java/com/example/transformer_manager_backkend/TransformerManagerBackkendApplication.java
 ```
 
 ---
@@ -47,7 +47,7 @@ demo/src/main/java/com/example/imageapp/DemoApplication.java
 2. Navigate to the frontend directory:
 
 ```bash
-cd image-app-frontend
+cd transformer-manager-frontend
 ```
 
 3. Install frontend dependencies:
@@ -66,9 +66,9 @@ npm start
 
 ## Summary
 
-| Component | Location             | Start Command                  |
-| --------- | -------------------- | ------------------------------ |
-| Backend   | `demo`               | Run `DemoApplication.java`     |
-| Frontend  | `image-app-frontend` | `npm install` then `npm start` |
+| Component | Location                       | Start Command                                    |
+| --------- | ------------------------------ | ------------------------------------------------ |
+| Backend   | `transformer-manager-backend`  | Run `TransformerManagerBackkendApplication.java` |
+| Frontend  | `transformer-manager-frontend` | `npm install` then `npm start`                   |
 
 ---
