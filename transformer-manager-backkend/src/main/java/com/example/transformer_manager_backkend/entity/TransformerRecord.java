@@ -1,12 +1,9 @@
 package com.example.transformer_manager_backkend.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.hibernate.annotations.CreationTimestamp;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -31,7 +28,13 @@ public class TransformerRecord {
     private Double locationLng;
 
     @Column
-    private String capacity;
+    private Double capacity;
+
+    @Column
+    private String transformerType;
+
+    @Column
+    private String poleNo;
 
     @OneToMany(mappedBy = "transformerRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("transformerRecord")
@@ -87,12 +90,28 @@ public class TransformerRecord {
         this.locationLng = locationLng;
     }
 
-    public String getCapacity() {
+    public Double getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(String capacity) {
+    public void setCapacity(Double capacity) {
         this.capacity = capacity;
+    }
+
+    public String getTransformerType() {
+        return transformerType;
+    }
+
+    public void setTransformerType(String transformerType) {
+        this.transformerType = transformerType;
+    }
+
+    public String getPoleNo() {
+        return poleNo;
+    }
+
+    public void setPoleNo(String poleNo) {
+        this.poleNo = poleNo;
     }
 
     public List<Image> getImages() {

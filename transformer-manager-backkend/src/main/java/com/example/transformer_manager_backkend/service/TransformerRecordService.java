@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-// import java.util.Optional;
 
 @Service
 public class TransformerRecordService {
@@ -35,7 +34,9 @@ public class TransformerRecordService {
             String locationName,
             Double locationLat,
             Double locationLng,
-            String capacity,
+            Double capacity,
+            String transformerType,
+            String poleNo,
             List<ImageDTO> images,
             Admin uploadedBy) throws IOException {
 
@@ -45,6 +46,8 @@ public class TransformerRecordService {
         transformerRecord.setLocationLat(locationLat);
         transformerRecord.setLocationLng(locationLng);
         transformerRecord.setCapacity(capacity);
+        transformerRecord.setTransformerType(transformerType);
+        transformerRecord.setPoleNo(poleNo);
         transformerRecord.setUploadedBy(uploadedBy);
 
         List<Image> imageEntities = new ArrayList<>();
@@ -112,7 +115,9 @@ public class TransformerRecordService {
             String locationName,
             Double locationLat,
             Double locationLng,
-            String capacity,
+            Double capacity,
+            String transformerType,
+            String poleNo,
             List<ImageDTO> newImages,
             Admin updatedBy) throws IOException {
 
@@ -129,9 +134,12 @@ public class TransformerRecordService {
             transformerRecord.setLocationLng(locationLng);
         if (capacity != null)
             transformerRecord.setCapacity(capacity);
+        if (transformerType != null)
+            transformerRecord.setTransformerType(transformerType);
+        if (poleNo != null)
+            transformerRecord.setPoleNo(poleNo);
 
         if (newImages != null && !newImages.isEmpty()) {
-            // Add new images without deleting existing ones
             List<Image> imageEntities = transformerRecord.getImages();
 
             for (ImageDTO imgDto : newImages) {

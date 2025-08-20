@@ -7,6 +7,8 @@ import {
   faUser,
   faSignOutAlt,
   faUpload,
+  faBolt,
+  faClipboardCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
 const MoodleNavbar = () => {
@@ -38,7 +40,12 @@ const MoodleNavbar = () => {
             {isAuthenticated && (
               <>
                 <Nav.Link as={Link} to="/">
-                  Dashboard
+                  <FontAwesomeIcon icon={faBolt} className="me-1" />
+                  Transformers
+                </Nav.Link>
+                <Nav.Link as={Link} to="/inspections">
+                  <FontAwesomeIcon icon={faClipboardCheck} className="me-1" />
+                  Inspections
                 </Nav.Link>
                 <Nav.Link as={Link} to="/upload">
                   <FontAwesomeIcon icon={faUpload} className="me-1" />

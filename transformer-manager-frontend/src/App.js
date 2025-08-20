@@ -1,15 +1,52 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// App.js (corrected)
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { Container } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from "./AuthContext";
 import Login from "./Login";
 import TransformerRecordUpload from "./components/TransformerRecordUpload";
-import TransformerRecordList from "./components/TransformerRecordList";
+import TransformerList from "./components/TransformerList";
+import InspectionList from "./components/InspectionList";
 import TransformerRecordDetail from "./components/TransformerRecordDetail";
 import ProtectedRoute from "./ProtectedRoute";
 import MoodleNavbar from "./components/MoodleNavbar";
 import "./App.css";
+
+// Component to handle title changes
+function TitleHandler() {
+  const location = useLocation();
+
+  useEffect(() => {
+    switch (location.pathname) {
+      case "/":
+        document.title = "Transformers - ThermoSight TMS";
+        break;
+      case "/inspections":
+        document.title = "Inspections - ThermoSight TMS";
+        break;
+      case "/upload":
+        document.title = "Upload Records - ThermoSight TMS";
+        break;
+      case "/login":
+        document.title = "Login - ThermoSight TMS";
+        break;
+      default:
+        if (location.pathname.startsWith("/records/")) {
+          document.title = "Record Details - ThermoSight TMS";
+        } else {
+          document.title = "ThermoSight TMS";
+        }
+    }
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   const [refresh, setRefresh] = useState(false);
@@ -21,6 +58,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <TitleHandler />
         <MoodleNavbar />
         <Container fluid className="main-container">
           <Routes>
@@ -29,7 +67,15 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute>
-                  <TransformerRecordList key={refresh} />
+                  <TransformerList key={refresh} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inspections"
+              element={
+                <ProtectedRoute>
+                  <InspectionList key={refresh} />
                 </ProtectedRoute>
               }
             />

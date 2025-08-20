@@ -32,8 +32,10 @@ const TransformerRecordUpload = ({ onUpload }) => {
     name: "",
     location: null,
     capacity: "",
+    transformerType: "",
+    poleNo: "",
     images: [],
-    existingImages: [], // New state for existing images
+    existingImages: [],
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -65,6 +67,8 @@ const TransformerRecordUpload = ({ onUpload }) => {
               lng: record.locationLng || null,
             },
             capacity: record.capacity || "",
+            transformerType: record.transformerType || "",
+            poleNo: record.poleNo || "",
             images: [],
             existingImages: record.images || [],
           });
@@ -190,36 +194,41 @@ const TransformerRecordUpload = ({ onUpload }) => {
       data.append("locationLat", formData.location?.lat || "");
       data.append("locationLng", formData.location?.lng || "");
       data.append("capacity", formData.capacity);
+      data.append("transformerType", formData.transformerType || "");
+      data.append("poleNo", formData.poleNo || "");
 
-      // Create arrays to maintain order
+      // Create arrays to maintain order - only include images that have files
       const imagesToUpload = formData.images.filter((img) => img.file);
-      const types = [];
-      const weatherConditions = [];
 
-      // First collect all files and their metadata
-      imagesToUpload.forEach((img) => {
-        data.append("images", img.file);
-        types.push(img.type);
+      if (imagesToUpload.length > 0) {
+        const types = [];
+        const weatherConditions = [];
 
-        if (img.type === "Baseline") {
-          weatherConditions.push(img.weatherCondition || "Sunny");
-        } else {
-          // For non-baseline images, we still need to push something
-          // to maintain the array indexes alignment
-          weatherConditions.push(null);
-        }
-      });
+        // First collect all files and their metadata
+        imagesToUpload.forEach((img) => {
+          data.append("images", img.file);
+          types.push(img.type);
 
-      // Then append the metadata arrays
-      types.forEach((type) => data.append("types", type));
-
-      // Only include weatherConditions if there are baseline images
-      if (weatherConditions.some((condition) => condition !== null)) {
-        weatherConditions.forEach((condition) => {
-          if (condition !== null) {
-            data.append("weatherConditions", condition);
+          if (img.type === "Baseline") {
+            weatherConditions.push(img.weatherCondition || "Sunny");
+          } else {
+            // For non-baseline images, we still need to push something
+            // to maintain the array indexes alignment
+            weatherConditions.push(null);
           }
         });
+
+        // Then append the metadata arrays
+        types.forEach((type) => data.append("types", type));
+
+        // Only include weatherConditions if there are baseline images
+        if (weatherConditions.some((condition) => condition !== null)) {
+          weatherConditions.forEach((condition) => {
+            if (condition !== null) {
+              data.append("weatherConditions", condition);
+            }
+          });
+        }
       }
 
       const config = {
@@ -323,13 +332,46 @@ const TransformerRecordUpload = ({ onUpload }) => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Capacity *</Form.Label>
+                  <Form.Label>Capacity (kVA) *</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
                     name="capacity"
                     value={formData.capacity}
                     onChange={handleInputChange}
+                    placeholder="e.g., 100"
+                    step="1"
+                    min="0"
                     required
+                  />
+                  <Form.Text className="text-muted">
+                    Enter capacity in kVA (kilovolt-amperes)
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row className="mb-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Transformer Type</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="transformerType"
+                    value={formData.transformerType}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Distribution, Power, etc."
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Pole Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="poleNo"
+                    value={formData.poleNo}
+                    onChange={handleInputChange}
+                    placeholder="e.g., P-1234"
                   />
                 </Form.Group>
               </Col>
@@ -396,11 +438,11 @@ const TransformerRecordUpload = ({ onUpload }) => {
             )}
 
             {/* New Images Section */}
-            <h4 className="mb-3">New Images</h4>
+            <h4 className="mb-3">New Images (Optional)</h4>
             {formData.images.length === 0 && (
               <Alert variant="info">
                 No new images added yet. Click "Add Image" below to upload
-                additional images.
+                additional images (optional).
               </Alert>
             )}
 
@@ -410,18 +452,19 @@ const TransformerRecordUpload = ({ onUpload }) => {
                   <Row>
                     <Col md={5}>
                       <Form.Group>
-                        <Form.Label>Image File *</Form.Label>
+                        <Form.Label>
+                          Image File {img.file ? "(Selected)" : ""}
+                        </Form.Label>
                         <Form.Control
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleFileChange(index, e)}
-                          required={img.file === null}
                         />
                       </Form.Group>
                     </Col>
                     <Col md={3}>
                       <Form.Group>
-                        <Form.Label>Type *</Form.Label>
+                        <Form.Label>Type</Form.Label>
                         <Form.Select
                           value={img.type}
                           onChange={(e) =>
@@ -436,7 +479,7 @@ const TransformerRecordUpload = ({ onUpload }) => {
                     {img.type === "Baseline" && (
                       <Col md={3}>
                         <Form.Group>
-                          <Form.Label>Weather Condition *</Form.Label>
+                          <Form.Label>Weather Condition</Form.Label>
                           <Form.Select
                             value={img.weatherCondition}
                             onChange={(e) =>

@@ -36,7 +36,9 @@ public class TransformerRecordController {
             @RequestParam("locationName") String locationName,
             @RequestParam("locationLat") Double locationLat,
             @RequestParam("locationLng") Double locationLng,
-            @RequestParam("capacity") String capacity,
+            @RequestParam("capacity") Double capacity,
+            @RequestParam(value = "transformerType", required = false) String transformerType,
+            @RequestParam(value = "poleNo", required = false) String poleNo,
             @RequestParam("images") List<MultipartFile> images,
             @RequestParam("types") List<String> types,
             @RequestParam(value = "weatherConditions", required = false) List<String> weatherConditions,
@@ -57,7 +59,8 @@ public class TransformerRecordController {
         }
 
         TransformerRecord savedRecord = transformerRecordService.saveTransformerRecord(
-                name, locationName, locationLat, locationLng, capacity, imageDTOs, admin);
+                name, locationName, locationLat, locationLng, capacity,
+                transformerType, poleNo, imageDTOs, admin);
 
         return ResponseEntity.ok(savedRecord);
     }
@@ -94,7 +97,9 @@ public class TransformerRecordController {
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "locationLat", required = false) Double locationLat,
             @RequestParam(value = "locationLng", required = false) Double locationLng,
-            @RequestParam(value = "capacity", required = false) String capacity,
+            @RequestParam(value = "capacity", required = false) Double capacity,
+            @RequestParam(value = "transformerType", required = false) String transformerType,
+            @RequestParam(value = "poleNo", required = false) String poleNo,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "types", required = false) String[] types,
             @RequestParam(value = "weatherConditions", required = false) String[] weatherConditions,
@@ -119,7 +124,8 @@ public class TransformerRecordController {
         }
 
         TransformerRecord updatedRecord = transformerRecordService.updateTransformerRecord(
-                id, name, locationName, locationLat, locationLng, capacity, imageDTOs, admin);
+                id, name, locationName, locationLat, locationLng, capacity,
+                transformerType, poleNo, imageDTOs, admin);
 
         return ResponseEntity.ok(updatedRecord);
     }

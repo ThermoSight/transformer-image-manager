@@ -20,6 +20,9 @@ import {
   faUser,
   faCalendar,
   faTrash,
+  faClock,
+  faBolt,
+  faHashtag,
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -88,6 +91,16 @@ const TransformerRecordDetail = () => {
       setShowDeleteModal(false);
     }
   };
+
+  // Separate images by type
+  const baselineImages =
+    transformerRecord?.images?.filter((image) => image.type === "Baseline") ||
+    [];
+
+  const maintenanceImages =
+    transformerRecord?.images?.filter(
+      (image) => image.type === "Maintenance"
+    ) || [];
 
   if (loading) {
     return (
@@ -158,8 +171,18 @@ const TransformerRecordDetail = () => {
                     {transformerRecord.locationName || "Not specified"}
                   </p>
                   <p>
+                    <strong>Transformer Type:</strong>{" "}
+                    {transformerRecord.transformerType || "Not specified"}
+                  </p>
+                  <p>
+                    <strong>Pole No:</strong>{" "}
+                    {transformerRecord.poleNo || "Not specified"}
+                  </p>
+                  <p>
                     <strong>Capacity:</strong>{" "}
-                    {transformerRecord.capacity || "Not specified"}
+                    {transformerRecord.capacity
+                      ? `${transformerRecord.capacity}kVA`
+                      : "Not specified"}
                   </p>
                 </Card.Body>
               </Card>
@@ -213,41 +236,120 @@ const TransformerRecordDetail = () => {
             <Tab eventKey="images" title="Images">
               {transformerRecord.images &&
               transformerRecord.images.length > 0 ? (
-                <Row className="g-3 mt-2">
-                  {transformerRecord.images.map((image) => (
-                    <Col key={image.id} xs={12} sm={6} md={4} lg={3}>
-                      <Card>
-                        <div style={{ position: "relative" }}>
-                          <Image
-                            src={`http://localhost:8080${image.filePath}`}
-                            alt={image.type}
-                            fluid
-                            style={{
-                              height: "180px",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => {
-                              setPreviewImage(
-                                `http://localhost:8080${image.filePath}`
-                              );
-                              setShowPreview(true);
-                            }}
-                          />
-                        </div>
-                        <Card.Body>
-                          <strong>Type:</strong> {image.type}
-                          {image.type === "Baseline" &&
-                            image.weatherCondition && (
-                              <div>
-                                <strong>Weather:</strong>{" "}
-                                {image.weatherCondition}
+                <Row className="mt-4">
+                  {/* Baseline Images - Left Side */}
+                  <Col md={6}>
+                    <h4 className="mb-3 text-center">Baseline Images</h4>
+                    {baselineImages.length > 0 ? (
+                      <Row className="g-3">
+                        {baselineImages.map((image) => (
+                          <Col key={image.id} xs={12}>
+                            <Card className="h-100">
+                              <div style={{ position: "relative" }}>
+                                <Image
+                                  src={`http://localhost:8080${image.filePath}`}
+                                  alt={image.type}
+                                  fluid
+                                  style={{
+                                    height: "250px",
+                                    width: "100%",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {
+                                    setPreviewImage(
+                                      `http://localhost:8080${image.filePath}`
+                                    );
+                                    setShowPreview(true);
+                                  }}
+                                />
                               </div>
-                            )}
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  ))}
+                              <Card.Body>
+                                <div className="d-flex justify-content-between align-items-start">
+                                  <div>
+                                    <strong>Type:</strong> {image.type}
+                                    {image.weatherCondition && (
+                                      <div>
+                                        <strong>Weather:</strong>{" "}
+                                        {image.weatherCondition}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-muted small text-end">
+                                    <FontAwesomeIcon
+                                      icon={faClock}
+                                      className="me-1"
+                                    />
+                                    {new Date(
+                                      image.uploadTime || image.createdAt
+                                    ).toLocaleString()}
+                                  </div>
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
+                    ) : (
+                      <Alert variant="info" className="text-center">
+                        No Baseline images available
+                      </Alert>
+                    )}
+                  </Col>
+
+                  {/* Maintenance Images - Right Side */}
+                  <Col md={6}>
+                    <h4 className="mb-3 text-center">Maintenance Images</h4>
+                    {maintenanceImages.length > 0 ? (
+                      <Row className="g-3">
+                        {maintenanceImages.map((image) => (
+                          <Col key={image.id} xs={12}>
+                            <Card className="h-100">
+                              <div style={{ position: "relative" }}>
+                                <Image
+                                  src={`http://localhost:8080${image.filePath}`}
+                                  alt={image.type}
+                                  fluid
+                                  style={{
+                                    height: "250px",
+                                    width: "100%",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {
+                                    setPreviewImage(
+                                      `http://localhost:8080${image.filePath}`
+                                    );
+                                    setShowPreview(true);
+                                  }}
+                                />
+                              </div>
+                              <Card.Body>
+                                <div className="d-flex justify-content-between align-items-start">
+                                  <div>
+                                    <strong>Type:</strong> {image.type}
+                                  </div>
+                                  <div className="text-muted small text-end">
+                                    <FontAwesomeIcon
+                                      icon={faClock}
+                                      className="me-1"
+                                    />
+                                    {new Date(
+                                      image.uploadTime || image.createdAt
+                                    ).toLocaleString()}
+                                  </div>
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
+                    ) : (
+                      <Alert variant="info" className="text-center">
+                        No Maintenance images available
+                      </Alert>
+                    )}
+                  </Col>
                 </Row>
               ) : (
                 <Alert variant="info" className="mt-3">

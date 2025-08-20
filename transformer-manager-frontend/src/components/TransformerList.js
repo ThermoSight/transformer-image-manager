@@ -15,8 +15,6 @@ import {
   InputGroup,
   Dropdown,
   ButtonGroup,
-  Tabs,
-  Tab,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -35,12 +33,11 @@ import {
   faThLarge,
   faBolt,
   faHashtag,
-  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 
-const TransformerRecordList = () => {
+const TransformerList = () => {
   const [transformerRecords, setTransformerRecords] = useState([]);
   const [filteredRecords, setFilteredRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +54,6 @@ const TransformerRecordList = () => {
   });
   const [capacityFilter, setCapacityFilter] = useState("all");
   const [viewMode, setViewMode] = useState("cards"); // 'cards' or 'table'
-  const [activeTab, setActiveTab] = useState("transformers"); // 'transformers' or 'inspections'
 
   const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
@@ -82,20 +78,6 @@ const TransformerRecordList = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Function to get the most recent upload time from images
-  const getMostRecentUpdate = (record) => {
-    if (!record.images || record.images.length === 0) {
-      return record.createdAt; // Fallback to creation date if no images
-    }
-
-    // Sort images by uploadTime in descending order and get the first one
-    const sortedImages = [...record.images].sort(
-      (a, b) => new Date(b.uploadTime) - new Date(a.uploadTime)
-    );
-
-    return sortedImages[0].uploadTime;
   };
 
   useEffect(() => {
@@ -144,19 +126,10 @@ const TransformerRecordList = () => {
     // Apply sorting
     if (sortConfig.key) {
       result.sort((a, b) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
-
-        // For inspections tab, sort by most recent update time
-        if (activeTab === "inspections" && sortConfig.key === "updatedAt") {
-          aValue = getMostRecentUpdate(a);
-          bValue = getMostRecentUpdate(b);
-        }
-
-        if (aValue < bValue) {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === "asc" ? -1 : 1;
         }
-        if (aValue > bValue) {
+        if (a[sortConfig.key] > b[sortConfig.key]) {
           return sortConfig.direction === "asc" ? 1 : -1;
         }
         return 0;
@@ -165,14 +138,7 @@ const TransformerRecordList = () => {
 
     setFilteredRecords(result);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [
-    transformerRecords,
-    searchTerm,
-    searchField,
-    capacityFilter,
-    sortConfig,
-    activeTab,
-  ]);
+  }, [transformerRecords, searchTerm, searchField, capacityFilter, sortConfig]);
 
   const handleDelete = async (id) => {
     try {
@@ -224,7 +190,7 @@ const TransformerRecordList = () => {
   return (
     <div className="moodle-container">
       <div className="page-header">
-        <h2>Transformer Records</h2>
+        <h2>Transformers</h2>
         <div className="d-flex align-items-center">
           <ButtonGroup className="me-3">
             <Button
@@ -245,7 +211,7 @@ const TransformerRecordList = () => {
           {isAuthenticated && (
             <Button variant="primary" onClick={() => navigate("/upload")}>
               <FontAwesomeIcon icon={faPlus} className="me-2" />
-              Add New Record
+              Add New Transformer
             </Button>
           )}
         </div>
@@ -327,7 +293,6 @@ const TransformerRecordList = () => {
                   <FontAwesomeIcon icon={faSort} className="me-2" />
                   Sort: {sortConfig.key === "name" && "Name"}
                   {sortConfig.key === "createdAt" && "Date"}
-                  {sortConfig.key === "updatedAt" && "Last Update"}
                   {sortConfig.key === "capacity" && "Capacity"}
                   {sortConfig.direction === "asc" ? "↑" : "↓"}
                 </Dropdown.Toggle>
@@ -338,13 +303,8 @@ const TransformerRecordList = () => {
                       (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => requestSort("createdAt")}>
-                    Created Date{" "}
+                    Date{" "}
                     {sortConfig.key === "createdAt" &&
-                      (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={() => requestSort("updatedAt")}>
-                    Last Update{" "}
-                    {sortConfig.key === "updatedAt" &&
                       (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </Dropdown.Item>
                   <Dropdown.Item onClick={() => requestSort("capacity")}>
@@ -358,20 +318,6 @@ const TransformerRecordList = () => {
           </Row>
         </Card.Body>
       </Card>
-
-      {/* Tabs for Transformers and Inspections */}
-      <Tabs
-        activeKey={activeTab}
-        onSelect={(k) => setActiveTab(k)}
-        className="mb-3"
-      >
-        <Tab eventKey="transformers" title="Transformers">
-          {/* Transformers content will be shown here */}
-        </Tab>
-        <Tab eventKey="inspections" title="Inspections">
-          {/* Inspections content will be shown here */}
-        </Tab>
-      </Tabs>
 
       {filteredRecords.length === 0 ? (
         <div className="text-center py-4">
@@ -401,20 +347,13 @@ const TransformerRecordList = () => {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    {activeTab === "transformers" ? (
-                      <>
-                        <th>Location</th>
-                        <th>Type</th>
-                        <th>Pole No</th>
-                        <th>Capacity</th>
-                      </>
-                    ) : (
-                      <>
-                        <th>Admin</th>
-                        <th>Last Update</th>
-                      </>
-                    )}
+                    <th>Location</th>
+                    <th>Type</th>
+                    <th>Pole No</th>
+                    <th>Capacity</th>
                     <th>Images</th>
+                    <th>Admin</th>
+                    <th>Date</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -422,74 +361,59 @@ const TransformerRecordList = () => {
                   {currentItems.map((record) => (
                     <tr key={record.id}>
                       <td>{record.name}</td>
-                      {activeTab === "transformers" ? (
-                        <>
-                          <td>
-                            {record.locationName && (
-                              <>
-                                <FontAwesomeIcon
-                                  icon={faMapMarkerAlt}
-                                  className="me-2 text-muted"
-                                />
-                                {record.locationName
-                                  .split(",")
-                                  .slice(0, 3)
-                                  .map((part) => part.trim())
-                                  .join(", ")}
-                              </>
-                            )}
-                          </td>
-                          <td>
-                            {record.transformerType ? (
-                              <Badge bg="info">{record.transformerType}</Badge>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td>
-                            {record.poleNo ? (
-                              <Badge bg="secondary">{record.poleNo}</Badge>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td>
-                            {record.capacity ? (
-                              <Badge
-                                bg={
-                                  record.capacity < 50
-                                    ? "info"
-                                    : record.capacity < 200
-                                    ? "primary"
-                                    : "success"
-                                }
-                              >
-                                {record.capacity}kVA
-                              </Badge>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td>{record.uploadedBy?.displayName || "-"}</td>
-                          <td>
+                      <td>
+                        {record.locationName && (
+                          <>
                             <FontAwesomeIcon
-                              icon={faClock}
+                              icon={faMapMarkerAlt}
                               className="me-2 text-muted"
                             />
-                            {new Date(
-                              getMostRecentUpdate(record)
-                            ).toLocaleDateString()}
-                          </td>
-                        </>
-                      )}
+                            {record.locationName
+                              .split(",")
+                              .slice(0, 2)
+                              .map((part) => part.trim())
+                              .join(", ")}
+                          </>
+                        )}
+                      </td>
+                      <td>
+                        {record.transformerType ? (
+                          <Badge bg="info">{record.transformerType}</Badge>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td>
+                        {record.poleNo ? (
+                          <Badge bg="secondary">{record.poleNo}</Badge>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td>
+                        {record.capacity ? (
+                          <Badge
+                            bg={
+                              record.capacity < 50
+                                ? "info"
+                                : record.capacity < 200
+                                ? "primary"
+                                : "success"
+                            }
+                          >
+                            {record.capacity}kVA
+                          </Badge>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
                       <td>
                         <Badge bg="secondary">
                           {record.images?.length || 0}
                         </Badge>
                       </td>
+                      <td>{record.uploadedBy?.displayName || "-"}</td>
+                      <td>{new Date(record.createdAt).toLocaleDateString()}</td>
                       <td>
                         <Button
                           variant="outline-primary"
@@ -540,92 +464,64 @@ const TransformerRecordList = () => {
                   <Card.Body>
                     <Card.Title className="d-flex justify-content-between align-items-start">
                       {record.name}
-                      {activeTab === "transformers" && (
-                        <Badge
-                          bg={
-                            record.capacity < 50
-                              ? "info"
-                              : record.capacity < 200
-                              ? "primary"
-                              : "success"
-                          }
-                          className="ms-2"
-                        >
-                          {record.capacity || 0}kVA
-                        </Badge>
-                      )}
+                      <Badge
+                        bg={
+                          record.capacity < 50
+                            ? "info"
+                            : record.capacity < 200
+                            ? "primary"
+                            : "success"
+                        }
+                        className="ms-2"
+                      >
+                        {record.capacity || 0}kVA
+                      </Badge>
                     </Card.Title>
 
-                    {activeTab === "transformers" ? (
-                      <>
-                        {record.locationName && (
-                          <Card.Text className="text-muted mb-2">
-                            <FontAwesomeIcon
-                              icon={faMapMarkerAlt}
-                              className="me-2"
-                            />
-                            {record.locationName
-                              .split(",")
-                              .slice(0, 3)
-                              .map((part) => part.trim())
-                              .join(", ")}
-                          </Card.Text>
-                        )}
-
-                        <div className="d-flex justify-content-between text-muted mb-3">
-                          <div>
-                            {record.transformerType && (
-                              <div className="mb-1">
-                                <FontAwesomeIcon
-                                  icon={faBolt}
-                                  className="me-2"
-                                />
-                                <small>{record.transformerType}</small>
-                              </div>
-                            )}
-                            {record.poleNo && (
-                              <div>
-                                <FontAwesomeIcon
-                                  icon={faHashtag}
-                                  className="me-2"
-                                />
-                                <small>Pole #{record.poleNo}</small>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="d-flex justify-content-between text-muted mb-3">
-                          <div>
-                            <FontAwesomeIcon icon={faUser} className="me-2" />
-                            <small>
-                              {record.uploadedBy?.displayName || "Unknown"}
-                            </small>
-                          </div>
-                        </div>
-                        <div className="d-flex justify-content-between text-muted mb-3">
-                          <div>
-                            <FontAwesomeIcon icon={faClock} className="me-2" />
-                            <small>
-                              Last update:{" "}
-                              {new Date(
-                                getMostRecentUpdate(record)
-                              ).toLocaleDateString()}
-                            </small>
-                          </div>
-                        </div>
-                      </>
+                    {record.locationName && (
+                      <Card.Text className="text-muted mb-2">
+                        <FontAwesomeIcon
+                          icon={faMapMarkerAlt}
+                          className="me-2"
+                        />
+                        {record.locationName
+                          .split(",")
+                          .slice(0, 3)
+                          .map((part) => part.trim())
+                          .join(", ")}
+                      </Card.Text>
                     )}
 
                     <div className="d-flex justify-content-between text-muted mb-3">
+                      <div>
+                        {record.transformerType && (
+                          <div className="mb-1">
+                            <FontAwesomeIcon icon={faBolt} className="me-2" />
+                            <small>{record.transformerType}</small>
+                          </div>
+                        )}
+                        {record.poleNo && (
+                          <div>
+                            <FontAwesomeIcon
+                              icon={faHashtag}
+                              className="me-2"
+                            />
+                            <small>Pole #{record.poleNo}</small>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="d-flex justify-content-between text-muted mb-3">
+                      <small>
+                        <FontAwesomeIcon icon={faUser} className="me-2" />
+                        {record.uploadedBy?.displayName || "Unknown"}
+                      </small>
                       <small>
                         <FontAwesomeIcon
                           icon={faCalendarAlt}
                           className="me-2"
                         />
-                        Created:{" "}
                         {new Date(record.createdAt).toLocaleDateString()}
                       </small>
                     </div>
@@ -748,4 +644,4 @@ const TransformerRecordList = () => {
   );
 };
 
-export default TransformerRecordList;
+export default TransformerList;
