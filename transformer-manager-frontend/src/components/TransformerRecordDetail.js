@@ -12,6 +12,7 @@ import {
   Tab,
   Tabs,
   Image,
+  Form
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -50,7 +51,12 @@ const TransformerRecordDetail = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
 
-  useEffect(() => {
+const [inspections, setInspections] = useState([]);
+const [showAddInspection, setShowAddInspection] = useState(false);
+const [inspectionDescription, setInspectionDescription] = useState("");
+
+
+useEffect(() => {
     const fetchTransformerRecord = async () => {
       try {
         setLoading(true);
@@ -70,6 +76,45 @@ const TransformerRecordDetail = () => {
     };
 
     fetchTransformerRecord();
+
+  }, [id, token, isAuthenticated]);
+
+
+
+  // Fetch inspections for this transformer
+
+  useEffect(() => {
+
+    const fetchInspections = async () => {
+
+      try {
+
+        const response = await axios.get(
+
+          `http://localhost:8080/api/inspections/${id}`,
+
+          {
+
+            headers: { Authorization: `Bearer ${token}` },
+
+          }
+
+        );
+
+        setInspections(response.data);
+
+      } catch (err) {
+
+        console.error("Failed to fetch inspections", err);
+
+      }
+
+    };
+
+
+
+    fetchInspections();
+
   }, [id, token]);
 
   const handleDeleteImage = async (imageId) => {
@@ -91,6 +136,60 @@ const TransformerRecordDetail = () => {
       setShowDeleteModal(false);
     }
   };
+
+
+  const handleAddInspection = async () => {
+
+    if (!inspectionDescription.trim()) {
+
+      alert("Please enter an inspection description");
+
+      return;
+
+    }
+
+
+
+    try {
+
+      const response = await axios.post(
+
+        "http://localhost:8080/api/inspections",
+
+        null,
+
+        {
+
+          params: {
+
+            transformerId: id,
+
+            description: inspectionDescription,
+
+          },
+
+          headers: { Authorization: `Bearer ${token}` },
+
+        }
+
+      );
+
+
+
+      setInspections([...inspections, response.data]);
+
+      setInspectionDescription("");
+
+      setShowAddInspection(false);
+
+    } catch (err) {
+
+      console.error("Failed to add inspection", err);
+
+    }
+
+  };
+
 
   // Separate images by type
   const baselineImages =
@@ -357,10 +456,95 @@ const TransformerRecordDetail = () => {
                 </Alert>
               )}
             </Tab>
+
+            <Tab eventKey="inspections" title="Inspections">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4>Inspections</h4>
+                <Button variant="primary" onClick={() => setShowAddInspection(true)}>
+                  + Add Inspection
+                </Button>
+              </div>
+
+              {inspections.length > 0 ? (
+                inspections.map((inspection) => (
+                  <Card key={inspection.id} className="mb-3">
+                    <Card.Body className="d-flex justify-content-between align-items-center">
+                      <div>
+                        {/* <strong>Date:</strong> {new Date(inspection.date).toLocaleDateString()} */}
+                        <strong>Description:</strong> {inspection.description}
+                      </div>
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => navigate(`/inspections/${inspection.id}`)}
+                      >
+                        View & Upload Image
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                ))
+              ) : (
+                <Alert variant="info">No inspections yet.</Alert>
+              )}
+            </Tab>
           </Tabs>
         </Card.Body>
       </Card>
 
+      {/* Add Inspection Modal */}
+
+      <Modal show={showAddInspection} onHide={() => setShowAddInspection(false)}>
+
+        <Modal.Header closeButton>
+
+          <Modal.Title>Add New Inspection</Modal.Title>
+
+        </Modal.Header>
+
+        <Modal.Body>
+
+          <Form>
+
+            <Form.Group>
+
+              <Form.Label>Description</Form.Label>
+
+              <Form.Control
+
+                type="text"
+
+                placeholder="Enter inspection description"
+
+                value={inspectionDescription}
+
+                onChange={(e) => setInspectionDescription(e.target.value)}
+
+              />
+
+            </Form.Group>
+
+          </Form>
+
+        </Modal.Body>
+
+        <Modal.Footer>
+
+          <Button variant="secondary" onClick={() => setShowAddInspection(false)}>
+
+            Cancel
+
+          </Button>
+
+          <Button variant="primary" onClick={handleAddInspection}>
+
+            Add Inspection
+
+          </Button>
+
+        </Modal.Footer>
+
+      </Modal>
+
+      
       {/* Delete Image Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
