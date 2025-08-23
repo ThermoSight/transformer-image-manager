@@ -1,5 +1,6 @@
 package com.example.transformer_manager_backkend.entity;
 
+import java.time.LocalDate; // Add this import
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class Inspection {
     private Long id;
 
     private String description;
+    
+    private LocalDate inspectionDate; // Add this field
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -45,6 +48,14 @@ public class Inspection {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public LocalDate getInspectionDate() { // Add getter
+        return inspectionDate;
+    }
+
+    public void setInspectionDate(LocalDate inspectionDate) { // Add setter
+        this.inspectionDate = inspectionDate;
     }
 
     public LocalDateTime getCreatedAt() {

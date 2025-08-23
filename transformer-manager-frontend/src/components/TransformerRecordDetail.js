@@ -51,12 +51,12 @@ const TransformerRecordDetail = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
 
-const [inspections, setInspections] = useState([]);
-const [showAddInspection, setShowAddInspection] = useState(false);
-const [inspectionDescription, setInspectionDescription] = useState("");
+  const [inspections, setInspections] = useState([]);
+  const [showAddInspection, setShowAddInspection] = useState(false);
+  const [inspectionDescription, setInspectionDescription] = useState("");
+  const [inspectionDate, setInspectionDate] = useState(""); // Add state for date
 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchTransformerRecord = async () => {
       try {
         setLoading(true);
@@ -76,45 +76,25 @@ useEffect(() => {
     };
 
     fetchTransformerRecord();
-
   }, [id, token, isAuthenticated]);
 
-
-
   // Fetch inspections for this transformer
-
   useEffect(() => {
-
     const fetchInspections = async () => {
-
       try {
-
         const response = await axios.get(
-
           `http://localhost:8080/api/inspections/${id}`,
-
           {
-
             headers: { Authorization: `Bearer ${token}` },
-
           }
-
         );
-
         setInspections(response.data);
-
       } catch (err) {
-
         console.error("Failed to fetch inspections", err);
-
       }
-
     };
 
-
-
     fetchInspections();
-
   }, [id, token]);
 
   const handleDeleteImage = async (imageId) => {
@@ -137,59 +117,39 @@ useEffect(() => {
     }
   };
 
-
   const handleAddInspection = async () => {
-
     if (!inspectionDescription.trim()) {
-
       alert("Please enter an inspection description");
-
       return;
-
     }
 
-
+    if (!inspectionDate) {
+      alert("Please select an inspection date");
+      return;
+    }
 
     try {
-
       const response = await axios.post(
-
         "http://localhost:8080/api/inspections",
-
         null,
-
         {
-
           params: {
-
             transformerId: id,
-
             description: inspectionDescription,
-
+            inspectionDate: inspectionDate, // Add date to params
           },
-
           headers: { Authorization: `Bearer ${token}` },
-
         }
-
       );
 
-
-
       setInspections([...inspections, response.data]);
-
       setInspectionDescription("");
-
+      setInspectionDate(""); // Reset date
       setShowAddInspection(false);
-
     } catch (err) {
-
       console.error("Failed to add inspection", err);
-
     }
-
   };
-
 
   // Separate images by type
   const baselineImages =
@@ -470,7 +430,8 @@ useEffect(() => {
                   <Card key={inspection.id} className="mb-3">
                     <Card.Body className="d-flex justify-content-between align-items-center">
                       <div>
-                        {/* <strong>Date:</strong> {new Date(inspection.date).toLocaleDateString()} */}
+                        <strong>Date:</strong> {new Date(inspection.inspectionDate).toLocaleDateString()} {/* Display date */}
+                        <br />
                         <strong>Description:</strong> {inspection.description}
                       </div>
                       <Button
@@ -491,60 +452,43 @@ useEffect(() => {
       </Card>
 
       {/* Add Inspection Modal */}
-
       <Modal show={showAddInspection} onHide={() => setShowAddInspection(false)}>
-
         <Modal.Header closeButton>
-
           <Modal.Title>Add New Inspection</Modal.Title>
-
         </Modal.Header>
-
         <Modal.Body>
-
           <Form>
-
-            <Form.Group>
-
-              <Form.Label>Description</Form.Label>
-
+            <Form.Group className="mb-3">
+              <Form.Label>Inspection Date</Form.Label>
               <Form.Control
-
-                type="text"
-
-                placeholder="Enter inspection description"
-
-                value={inspectionDescription}
-
-                onChange={(e) => setInspectionDescription(e.target.value)}
-
+                type="date"
+                value={inspectionDate}
+                onChange={(e) => setInspectionDate(e.target.value)}
+                required
               />
-
             </Form.Group>
-
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter inspection description"
+                value={inspectionDescription}
+                onChange={(e) => setInspectionDescription(e.target.value)}
+                required
+              />
+            </Form.Group>
           </Form>
-
         </Modal.Body>
-
         <Modal.Footer>
-
           <Button variant="secondary" onClick={() => setShowAddInspection(false)}>
-
             Cancel
-
           </Button>
-
           <Button variant="primary" onClick={handleAddInspection}>
-
             Add Inspection
-
           </Button>
-
         </Modal.Footer>
-
       </Modal>
 
-      
       {/* Delete Image Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
