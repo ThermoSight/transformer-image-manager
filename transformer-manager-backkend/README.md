@@ -1,6 +1,6 @@
 Here is the clean, copy-paste ready code for your GitHub README section:
 
-```markdown
+
 # Transformer Manager Backend
 
 Spring Boot REST API backend for managing transformer records and thermal images. Built for the EN3350 Software Design Competition.
