@@ -3,16 +3,18 @@
 Spring Boot REST API for managing transformer records and their thermal images.  
 Auth is JWT‑based; data is stored in PostgreSQL; files are stored on disk.
 
-> **Note:** The folder name is intentionally `transformer-manager-backkend` (has a double “kk”). Keep paths consistent unless you plan to rename the module.
+> **Note:** The folder name is intentionally `transformer-manager-backkend` . Keep paths consistent unless you plan to rename the module.
 
 ---
 
-## 🚀 Quick Start
+##  Setup
 
 ### 1) Prerequisites
 - **Java 17+** ([Download Oracle JDK](https://www.oracle.com/java/technologies/downloads/#java17) | [Download Eclipse Temurin JDK](https://adoptium.net/temurin/releases/?version=17))
 - **Maven 3.9+** ([Download Apache Maven](https://maven.apache.org/download.cgi))
 - **PostgreSQL 14+** (or newer) ([Download PostgreSQL](https://www.postgresql.org/download/))
+
+> **Note:** Add Java and Maven into environment user variables and set the paths correctly.
 
 ### 2) Database (PostgreSQL)
 
@@ -20,25 +22,21 @@ Create a dedicated user and database (recommended):
 
 ```sql
 -- Run as postgres superuser (e.g., via pgAdmin)
-CREATE USER progres WITH PASSWORD 'add_your_pw';
-CREATE DATABASE transformer_db OWNER progres;
-
--- (Optional) If schema already exists and you need grants:
--- \c transformer_db1
--- GRANT ALL PRIVILEGES ON ALL TABLES    IN SCHEMA public TO transformer_user;
--- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO transformer_user;
+CREATE USER postgres WITH PASSWORD 'add_your_pw';
+CREATE DATABASE transformer_db OWNER postgres;
 ````
 
 ### 3) Configuration
 
 Default configuration lives in `src/main/resources/application.properties`:
+Here, all the admins and there passwords are available.
 
 ```properties
 spring.application.name=transformer-manager-backkend
 
 spring.datasource.url=jdbc:postgresql://localhost:5432/transformer_db1
-spring.datasource.username=transformer_user
-spring.datasource.password=ChangeMe_Strong!123
+spring.datasource.username=postgres
+spring.datasource.password=add_your_pw
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
@@ -66,15 +64,6 @@ admin.init.users[3].password=admin4pass
 admin.init.users[3].displayName=Admin Four
 ```
 
-**Prefer env vars** (no secrets in git):
-
-```bash
-# PowerShell
-$env:DB_URL="jdbc:postgresql://localhost:5432/transformer_db1"
-$env:DB_USER="transformer_user"
-$env:DB_PASSWORD="ChangeMe_Strong!123"
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.url=$env:DB_URL --spring.datasource.username=$env:DB_USER --spring.datasource.password=$env:DB_PASSWORD"
-```
 
 ### 4) Run
 
@@ -86,68 +75,122 @@ mvn spring-boot:run
 
 Change port if 8080 is busy:
 
-```properties
-# application.properties
-server.port=8081
-```
 
-Or:
+### 5) Run TransformerManagerBackkendApplication.java file 
 
-```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
-```
+In the path
+>  C:\Users\admin\Desktop\Web-Basic\phase_1_test4\transformer-image-manager\transformer-manager-backkend\src\main\java\com\example\transformer_manager_backkend\TransformerManagerBackkendApplication.java)
 
-### 5) Build a JAR
 
-```bash
-mvn clean package
-java -jar target/*-SNAPSHOT.jar
-```
+## Implemented Backend Features
+1. Core Application Setup
+
+    - Spring Boot Application (TransformerManagerBackkendApplication.java) - Main entry point
+
+    - Maven Project Structure with proper packaging and dependencies
+
+    - Maven Wrapper (mvnw, mvnw.cmd) for consistent builds
+
+2. Layered Architecture Implementation
+
+The backend follows a clean, modular architecture with these packages:
+
+    config/ - Configuration classes for application setup
+
+        SecurityConfig.java - Configures JWT authentication and API security
+
+        WebConfig.java - Sets up CORS, MVC configuration, and other web settings
+
+        JwtFilter.java - Custom filter for JWT token validation
+
+    controller/ - REST API endpoints (HTTP layer)
+
+        AuthController.java - Handles user login and JWT token generation
+
+        TransformerController.java - Manages CRUD operations for transformers (GET, POST, PUT, DELETE)
+
+        ImageController.java - Handles thermal image upload and retrieval
+
+    entity/ - JPA entities (database model)
+
+        User.java - Represents admin users with username, password, and roles
+
+        Transformer.java - Model for transformer data (ID, location, capacity, timestamps)
+
+        ThermalImage.java - Model for image metadata (filename, path, type, environmental condition)
+
+    repository/ - Data access layer (Spring Data JPA)
+
+        UserRepository.java - CRUD operations for User entities
+
+        TransformerRepository.java - Custom queries and operations for Transformer entities
+
+        ThermalImageRepository.java - Image-related database operations
+
+    service/ - Business logic layer
+
+        UserService.java - Handles user authentication and management
+
+        TransformerService.java - Contains business logic for transformer operations
+
+        ImageService.java - Manages image processing and file storage logic
+
+3. Database Connection & Configuration
+
+PostgreSQL Connection is established through:
+
+- JDBC URL Configuration in application.properties
+- JPA/Hibernate Integration for object-relational mapping:
+- Connection Pooling via HikariCP (default in Spring Boot 3)
+- Automatic Schema Management - Hibernate automatically creates/updates tables based on Entity classes
+
+4. REST API Endpoints
+
+   - CRUD Operations for managing transformer records
+
+   - JWT-protected Routes with proper authentication
+
+   - JSON Request/Response handling with Spring MVC
+
+5. Security & Authentication
+
+   - JWT-based Authentication with token validation
+
+   - Password Encryption using BCrypt encoding
+
+   - Role-based Authorization for protected endpoints
+
+6. Application Configuration
+
+   - Externalized Configuration via application.properties
+
+   - Environment-specific settings support
+
+   - Custom Configuration classes in config/ package
+
+7. Build & Deployment Ready
+
+   - Maven Build System with pom.xml configuration
+
+   - Executable JAR packaging for easy deployment
+
+   - Test Infrastructure setup (test/ directory)
+
+Technical Stack Implemented:
+
+    Java 17+ with Spring Boot 3.x framework
+
+    Spring Data JPA with Hibernate ORM
+
+    PostgreSQL Database with JDBC connectivity
+
+    JWT Authentication with Spring Security
+
+    Maven for dependency management
+
+    RESTful Web Services with JSON serialization
 
 ---
-
-## ✅ Implemented Features
-
-* **Authentication & Authorization**
-
-  * JWT login, Spring Security configuration
-  * Startup seeding of admin users (configurable via `admin.init.*`)
-
-* **Transformer Records**
-
-  * CRUD for transformer metadata (ID, location, capacity, etc.)
-  * Service + Repository layers using Spring Data JPA
-
-* **Image Uploads**
-
-  * Upload thermal images for a transformer
-  * Files saved under `./uploads` (configurable via `upload.directory`)
-  * 5 MB default file size limit
-
-* **Developer‑friendly Defaults**
-
-  * `ddl-auto=update` for schema evolution in dev
-  * SQL logging enabled in dev
-  * HikariCP connection pool
-
----
-
-## 🔌 API (high‑level)
-
-> Exact paths may vary slightly with your controllers; typical pattern:
-
-* `POST /api/auth/login` → returns JWT
-* `GET /api/transformers` → list records
-* `POST /api/transformers` → create record
-* `GET /api/transformers/{id}` → get details
-* `PUT /api/transformers/{id}` → update
-* `DELETE /api/transformers/{id}` → delete
-* `POST /api/transformers/{id}/images` → upload image
-
-Add `Authorization: Bearer <token>` header for protected routes.
-
----
-
 ## ⚠️ Known Limitations / Issues
 
 * **Port conflicts**
@@ -174,42 +217,31 @@ Add `Authorization: Bearer <token>` header for protected routes.
 
 ```
 transformer-manager-backkend/
-  ├─ pom.xml
-  ├─ src/
-  │  ├─ main/
-  │  │  ├─ java/com/example/transformer_manager_backkend/
-  │  │  │  ├─ TransformerManagerBackkendApplication.java
-  │  │  │  ├─ config/           # Security, JWT, WebMvc config
-  │  │  │  ├─ controller/       # REST controllers
-  │  │  │  ├─ entity/           # JPA entities
-  │  │  │  ├─ repository/       # Spring Data repositories
-  │  │  │  └─ service/          # Business logic
-  │  │  └─ resources/
-  │  │     └─ application.properties
-  │  └─ test/
-  └─ uploads/                    # runtime: uploaded images
+├── .mvn/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── example/
+│   │   │           └── transformer_manager_backkend/
+│   │   │               ├── config/
+│   │   │               ├── controller/
+│   │   │               ├── entity/
+│   │   │               ├── repository/
+│   │   │               ├── service/
+│   │   │               └── TransformerManagerBackkendApplication.java
+│   │   └── resources/
+│   │       └── application.properties
+│   └── test/
+├── target/
+├── .gitattributes
+├── .gitignore
+├── mvnw
+├── mvnw.cmd
+└── pom.xml
 ```
 
 ---
 
-## 🧪 Troubleshooting
 
-* **`FATAL: password authentication failed for user`**
-  Verify DB creds/role and connectivity; try logging in with `psql -U <user> -h localhost`.
 
-* **`Web server failed to start. Port 8080 was already in use.`**
-  Kill the process using 8080 or change `server.port`.
-
-* **Hibernate dialect warning**
-  With Hibernate 6, PostgreSQL dialect is auto‑detected; you can remove the explicit setting.
-
----
-
-## 📄 License
-
-Internal/educational use. Add your preferred license here.
-
-```
-
-Want me to drop this file into your ZIP and give you back a ready‑to‑download archive?
-```
