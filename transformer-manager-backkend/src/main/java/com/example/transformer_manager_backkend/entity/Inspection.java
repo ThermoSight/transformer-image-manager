@@ -1,11 +1,23 @@
 package com.example.transformer_manager_backkend.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List; // Add this import
+
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "inspections")
@@ -31,6 +43,9 @@ public class Inspection {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false) // Add this field
+    private LocalDate inspectionDate;
 
     private String notes;
 
@@ -73,6 +88,14 @@ public class Inspection {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDate getInspectionDate() { // Add getter
+        return inspectionDate;
+    }
+
+    public void setInspectionDate(LocalDate inspectionDate) { // Add setter
+        this.inspectionDate = inspectionDate;
     }
 
     public String getNotes() {

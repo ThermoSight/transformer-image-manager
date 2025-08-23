@@ -16,6 +16,7 @@ import {
   faUpload,
   faPlus,
   faTimes,
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
@@ -26,6 +27,7 @@ const InspectionUpload = () => {
   const { token } = useAuth();
 
   const [formData, setFormData] = useState({
+    inspectionDate: new Date().toISOString().split('T')[0], // Default to today
     notes: "",
     images: [],
   });
@@ -87,6 +89,12 @@ const InspectionUpload = () => {
       return;
     }
 
+    // Validate date
+    if (!formData.inspectionDate) {
+      setError("Please select an inspection date");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSuccess("");
@@ -94,6 +102,7 @@ const InspectionUpload = () => {
     try {
       const data = new FormData();
       data.append("transformerRecordId", transformerId);
+      data.append("inspectionDate", formData.inspectionDate);
       data.append("notes", formData.notes);
 
       // Add images that have files
@@ -177,7 +186,27 @@ const InspectionUpload = () => {
 
           <Form onSubmit={handleSubmit}>
             <Row className="mb-4">
-              <Col md={12}>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>
+                    <FontAwesomeIcon icon={faCalendarAlt} className="me-2" />
+                    Inspection Date *
+                  </Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="inspectionDate"
+                    value={formData.inspectionDate}
+                    onChange={handleInputChange}
+                    required
+                    // REMOVED: max={new Date().toISOString().split('T')[0]} 
+                    // Now allows any date (past, present, or future)
+                  />
+                  <Form.Text className="text-muted">
+                    Select the date when the inspection was conducted
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
                 <Form.Group>
                   <Form.Label>Notes (Optional)</Form.Label>
                   <Form.Control
@@ -192,11 +221,11 @@ const InspectionUpload = () => {
               </Col>
             </Row>
 
-            <h4 className="mb-3">Maintenance Images</h4>
+            <h4 className="mb-3">Maintenance Images (Optional)</h4>
             {formData.images.length === 0 && (
               <Alert variant="info">
                 No images added yet. Click "Add Image" below to upload
-                maintenance images (optional).
+                maintenance images.
               </Alert>
             )}
 
