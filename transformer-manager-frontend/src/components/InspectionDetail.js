@@ -19,6 +19,7 @@ import {
   faCalendar,
   faTrash,
   faClock,
+  faCalendarCheck, // Add this icon for inspection date
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -28,7 +29,7 @@ const InspectionDetail = () => {
   const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
   const [inspection, setInspection] = useState(null);
-  const [transformerRecord, setTransformerRecord] = useState(null); // Add this state
+  const [transformerRecord, setTransformerRecord] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
@@ -46,7 +47,7 @@ const InspectionDetail = () => {
         );
         setInspection(response.data);
 
-        // Fetch transformer record separately to get all images (same as TransformerRecordDetail)
+        // Fetch transformer record separately to get all images
         if (response.data.transformerRecord?.id) {
           const transformerResponse = await axios.get(
             `http://localhost:8080/api/transformer-records/${response.data.transformerRecord.id}`,
@@ -68,11 +69,23 @@ const InspectionDetail = () => {
     fetchInspection();
   }, [id, token]);
 
-  // Get ALL images from transformer record (same as TransformerRecordDetail)
+  // Get ALL images from transformer record
   const allImages = transformerRecord?.images || [];
 
   // Get maintenance images from this inspection
   const maintenanceImages = inspection?.images || [];
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not specified";
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   if (loading) {
     return (
@@ -115,13 +128,17 @@ const InspectionDetail = () => {
           <div className="d-flex justify-content-between align-items-start mb-4">
             <div>
               <h2>Inspection #{inspection.id}</h2>
+              <div className="text-muted mb-2">
+                <FontAwesomeIcon icon={faCalendarCheck} className="me-2" />
+                <strong>Inspection Date:</strong> {formatDate(inspection.inspectionDate)}
+              </div>
               <div className="text-muted mb-3">
                 <FontAwesomeIcon icon={faUser} className="me-2" />
                 Conducted by: {inspection.conductedBy?.displayName || "Unknown"}
               </div>
               <div className="text-muted">
                 <FontAwesomeIcon icon={faCalendar} className="me-2" />
-                Conducted: {new Date(inspection.createdAt).toLocaleString()}
+                Record created: {new Date(inspection.createdAt).toLocaleString()}
               </div>
             </div>
             <div>
@@ -168,22 +185,31 @@ const InspectionDetail = () => {
             </Col>
             <Col md={6}>
               <Card>
-                <Card.Header>Inspection Notes</Card.Header>
+                <Card.Header>Inspection Details</Card.Header>
                 <Card.Body>
-                  {inspection.notes ? (
-                    <p>{inspection.notes}</p>
-                  ) : (
-                    <p className="text-muted">
-                      No notes provided for this inspection.
-                    </p>
-                  )}
+                  <div className="mb-3">
+                    <strong>Inspection Date:</strong>
+                    <br />
+                    {formatDate(inspection.inspectionDate)}
+                  </div>
+                  <div>
+                    <strong>Notes:</strong>
+                    <br />
+                    {inspection.notes ? (
+                      <p className="mt-1">{inspection.notes}</p>
+                    ) : (
+                      <p className="text-muted mt-1">
+                        No notes provided for this inspection.
+                      </p>
+                    )}
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
           <Row className="mt-4">
-            {/* Baseline Images - Left Side - SAME AS TransformerRecordDetail */}
+            {/* Baseline Images - Left Side */}
             <Col md={6}>
               <h4 className="mb-3 text-center">Baseline Images</h4>
               {allImages.length > 0 ? (
