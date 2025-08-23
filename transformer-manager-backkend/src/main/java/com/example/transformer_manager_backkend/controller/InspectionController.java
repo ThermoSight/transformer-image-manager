@@ -8,12 +8,12 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.CrossOrigin; // Add this import
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam; // Add this import
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,20 +64,33 @@ public class InspectionController {
         return inspectionRepository.findByTransformerRecordId(transformerId);
     }
 
-    @PostMapping("/{id}/upload-image")
-    public InspectionImage uploadImage(@PathVariable Long id,
-                                       @RequestParam MultipartFile file) throws IOException {
-        Inspection inspection = inspectionRepository.findById(id)
+    // Update this method in your InspectionController.java
+    @GetMapping("/detail/{id}")
+    public Inspection getInspectionWithImages(@PathVariable Long id) {
+        return inspectionRepository.findByIdWithImages(id)
                 .orElseThrow(() -> new RuntimeException("Inspection not found"));
-
-        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        File dest = new File(uploadDir + "/" + filename);
-        file.transferTo(dest);
-
-        InspectionImage image = new InspectionImage();
-        image.setImageUrl("/uploads/" + filename);
-        image.setInspection(inspection);
-
-        return inspectionImageRepository.save(image);
     }
+
+@PostMapping("/{id}/upload-image")
+public InspectionImage uploadImage(@PathVariable Long id,
+                                   @RequestParam MultipartFile file) throws IOException {
+    Inspection inspection = inspectionRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Inspection not found"));
+
+    // Create the upload directory if it doesn't exist
+    File uploadDirectory = new File(uploadDir);
+    if (!uploadDirectory.exists()) {
+        uploadDirectory.mkdirs(); // Create directory and parent directories
+    }
+
+    String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+    File dest = new File(uploadDirectory, filename); // Use proper path construction
+    file.transferTo(dest);
+
+    InspectionImage image = new InspectionImage();
+    image.setImageUrl("/uploads/" + filename);
+    image.setInspection(inspection);
+
+    return inspectionImageRepository.save(image);
+}
 }

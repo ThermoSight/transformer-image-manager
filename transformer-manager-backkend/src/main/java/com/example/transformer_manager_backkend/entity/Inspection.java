@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType; // Add this import
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,18 +22,15 @@ public class Inspection {
     private Long id;
 
     private String description;
-    
     private LocalDate inspectionDate; // Add this field
-
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "transformer_id")
     private TransformerRecord transformerRecord;
 
-    @OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // Change to EAGER
     private List<InspectionImage> images;
-
     // ✅ Getters and Setters
     public Long getId() {
         return id;
