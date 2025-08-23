@@ -100,18 +100,8 @@ const TransformerRecordUpload = ({ onUpload }) => {
     newImages[index] = {
       ...newImages[index],
       file: e.target.files[0],
-      type: newImages[index]?.type || "Maintenance",
-      weatherCondition: newImages[index]?.weatherCondition || "",
-    };
-    setFormData((prev) => ({ ...prev, images: newImages }));
-  };
-
-  const handleTypeChange = (index, type) => {
-    const newImages = [...formData.images];
-    newImages[index] = {
-      ...newImages[index],
-      type,
-      weatherCondition: type === "Baseline" ? "Sunny" : "",
+      type: "Baseline", // Force baseline type for transformers
+      weatherCondition: newImages[index]?.weatherCondition || "Sunny",
     };
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
@@ -130,7 +120,7 @@ const TransformerRecordUpload = ({ onUpload }) => {
       ...prev,
       images: [
         ...prev.images,
-        { file: null, type: "Maintenance", weatherCondition: "" },
+        { file: null, type: "Baseline", weatherCondition: "Sunny" },
       ],
     }));
   };
@@ -208,27 +198,14 @@ const TransformerRecordUpload = ({ onUpload }) => {
         imagesToUpload.forEach((img) => {
           data.append("images", img.file);
           types.push(img.type);
-
-          if (img.type === "Baseline") {
-            weatherConditions.push(img.weatherCondition || "Sunny");
-          } else {
-            // For non-baseline images, we still need to push something
-            // to maintain the array indexes alignment
-            weatherConditions.push(null);
-          }
+          weatherConditions.push(img.weatherCondition || "Sunny");
         });
 
         // Then append the metadata arrays
         types.forEach((type) => data.append("types", type));
-
-        // Only include weatherConditions if there are baseline images
-        if (weatherConditions.some((condition) => condition !== null)) {
-          weatherConditions.forEach((condition) => {
-            if (condition !== null) {
-              data.append("weatherConditions", condition);
-            }
-          });
-        }
+        weatherConditions.forEach((condition) =>
+          data.append("weatherConditions", condition)
+        );
       }
 
       const config = {
@@ -388,7 +365,7 @@ const TransformerRecordUpload = ({ onUpload }) => {
             {/* Existing Images Section */}
             {editId && formData.existingImages.length > 0 && (
               <>
-                <h4 className="mb-3">Existing Images</h4>
+                <h4 className="mb-3">Existing Baseline Images</h4>
                 <Row className="g-3 mb-4">
                   {formData.existingImages.map((image) => (
                     <Col key={image.id} xs={12} sm={6} md={4} lg={3}>
@@ -438,11 +415,11 @@ const TransformerRecordUpload = ({ onUpload }) => {
             )}
 
             {/* New Images Section */}
-            <h4 className="mb-3">New Images (Optional)</h4>
+            <h4 className="mb-3">New Baseline Images (Optional)</h4>
             {formData.images.length === 0 && (
               <Alert variant="info">
                 No new images added yet. Click "Add Image" below to upload
-                additional images (optional).
+                baseline images (optional).
               </Alert>
             )}
 
@@ -453,7 +430,7 @@ const TransformerRecordUpload = ({ onUpload }) => {
                     <Col md={5}>
                       <Form.Group>
                         <Form.Label>
-                          Image File {img.file ? "(Selected)" : ""}
+                          Baseline Image {img.file ? "(Selected)" : ""}
                         </Form.Label>
                         <Form.Control
                           type="file"
@@ -464,35 +441,19 @@ const TransformerRecordUpload = ({ onUpload }) => {
                     </Col>
                     <Col md={3}>
                       <Form.Group>
-                        <Form.Label>Type</Form.Label>
+                        <Form.Label>Weather Condition</Form.Label>
                         <Form.Select
-                          value={img.type}
+                          value={img.weatherCondition}
                           onChange={(e) =>
-                            handleTypeChange(index, e.target.value)
+                            handleWeatherChange(index, e.target.value)
                           }
                         >
-                          <option value="Maintenance">Maintenance</option>
-                          <option value="Baseline">Baseline</option>
+                          <option value="Sunny">Sunny</option>
+                          <option value="Cloudy">Cloudy</option>
+                          <option value="Rainy">Rainy</option>
                         </Form.Select>
                       </Form.Group>
                     </Col>
-                    {img.type === "Baseline" && (
-                      <Col md={3}>
-                        <Form.Group>
-                          <Form.Label>Weather Condition</Form.Label>
-                          <Form.Select
-                            value={img.weatherCondition}
-                            onChange={(e) =>
-                              handleWeatherChange(index, e.target.value)
-                            }
-                          >
-                            <option value="Sunny">Sunny</option>
-                            <option value="Cloudy">Cloudy</option>
-                            <option value="Rainy">Rainy</option>
-                          </Form.Select>
-                        </Form.Group>
-                      </Col>
-                    )}
                     <Col md={1} className="d-flex align-items-end">
                       <Button
                         variant="danger"
@@ -510,7 +471,7 @@ const TransformerRecordUpload = ({ onUpload }) => {
             <div className="d-flex justify-content-between mt-4">
               <Button variant="outline-primary" onClick={addImageField}>
                 <FontAwesomeIcon icon={faPlus} className="me-2" />
-                Add Image
+                Add Baseline Image
               </Button>
               <Button variant="primary" type="submit" disabled={loading}>
                 {loading ? (
@@ -524,9 +485,9 @@ const TransformerRecordUpload = ({ onUpload }) => {
                     Processing...
                   </>
                 ) : editId ? (
-                  "Update Record"
+                  "Update Transformer"
                 ) : (
-                  "Upload Record"
+                  "Create Transformer"
                 )}
               </Button>
             </div>
@@ -561,8 +522,8 @@ const TransformerRecordUpload = ({ onUpload }) => {
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete this image? This action cannot be
-          undone.
+          Are you sure you want to delete this baseline image? This action
+          cannot be undone.
         </Modal.Body>
         <Modal.Footer>
           <Button

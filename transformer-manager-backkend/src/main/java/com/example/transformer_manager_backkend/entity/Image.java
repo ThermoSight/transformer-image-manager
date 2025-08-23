@@ -28,10 +28,16 @@ public class Image {
     @Column
     private String weatherCondition; // Only for Baseline
 
+    // Prevent recursion by ignoring image lists in parent objects
     @ManyToOne
-    @JoinColumn(name = "transformer_record_id") // Renamed column to reflect new entity name
-    @JsonIgnoreProperties("images") // Prevent circular reference when serializing TransformerRecord
+    @JoinColumn(name = "transformer_record_id")
+    @JsonIgnoreProperties({ "images", "inspections" })
     private TransformerRecord transformerRecord;
+
+    @ManyToOne
+    @JoinColumn(name = "inspection_id")
+    @JsonIgnoreProperties({ "images", "transformerRecord" })
+    private Inspection inspection;
 
     // Getters and Setters
     public Long getId() {
@@ -80,5 +86,13 @@ public class Image {
 
     public void setTransformerRecord(TransformerRecord transformerRecord) {
         this.transformerRecord = transformerRecord;
+    }
+
+    public Inspection getInspection() {
+        return inspection;
+    }
+
+    public void setInspection(Inspection inspection) {
+        this.inspection = inspection;
     }
 }

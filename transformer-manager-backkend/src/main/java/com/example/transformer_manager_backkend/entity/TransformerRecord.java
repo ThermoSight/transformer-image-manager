@@ -36,9 +36,14 @@ public class TransformerRecord {
     @Column
     private String poleNo;
 
+    // Prevent recursion by ignoring parent record in children
     @OneToMany(mappedBy = "transformerRecord", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("transformerRecord")
+    @JsonIgnoreProperties({ "transformerRecord", "inspection" })
     private List<Image> images;
+
+    @OneToMany(mappedBy = "transformerRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({ "transformerRecord", "images" })
+    private List<Inspection> inspections;
 
     @ManyToOne
     @JoinColumn(name = "uploaded_by")
@@ -120,6 +125,14 @@ public class TransformerRecord {
 
     public void setImages(List<Image> images) {
         this.images = images;
+    }
+
+    public List<Inspection> getInspections() {
+        return inspections;
+    }
+
+    public void setInspections(List<Inspection> inspections) {
+        this.inspections = inspections;
     }
 
     public Admin getUploadedBy() {

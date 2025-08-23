@@ -1,4 +1,4 @@
-// App.js (corrected)
+// App.js (updated for transformer/inspection separation)
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -13,14 +13,12 @@ import Login from "./Login";
 import TransformerRecordUpload from "./components/TransformerRecordUpload";
 import TransformerList from "./components/TransformerList";
 import InspectionList from "./components/InspectionList";
+import InspectionDetail from "./components/InspectionDetail";
+import InspectionUpload from "./components/InspectionUpload";
 import TransformerRecordDetail from "./components/TransformerRecordDetail";
 import ProtectedRoute from "./ProtectedRoute";
 import MoodleNavbar from "./components/MoodleNavbar";
 import "./App.css";
-import InspectionDetail from "./components/InspectionDetail";
-
-<Route path="/inspections/:id" element={<InspectionDetail />} />
-
 
 // Component to handle title changes
 function TitleHandler() {
@@ -35,21 +33,22 @@ function TitleHandler() {
         document.title = "Inspections - ThermoSight TMS";
         break;
       case "/upload":
-        document.title = "Upload Records - ThermoSight TMS";
+        document.title = "Upload Transformer - ThermoSight TMS";
         break;
       case "/login":
         document.title = "Login - ThermoSight TMS";
         break;
       default:
         if (location.pathname.startsWith("/records/")) {
-          document.title = "Record Details - ThermoSight TMS";
-
-
+          document.title = "Transformer Details - ThermoSight TMS";
+        } else if (location.pathname.startsWith("/inspections/list/")) {
+          document.title = "Inspections List - ThermoSight TMS";
         } else if (location.pathname.startsWith("/inspections/")) {
-
-          document.title = "Inspection Details - ThermoSight TMS";
-
-
+          if (location.pathname.startsWith("/inspections/add/")) {
+            document.title = "Add Inspection - ThermoSight TMS";
+          } else {
+            document.title = "Inspection Details - ThermoSight TMS";
+          }
         } else {
           document.title = "ThermoSight TMS";
         }
@@ -90,18 +89,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
-
-            <Route
-              path="/inspections/:id"
-              element={
-                <ProtectedRoute>
-                  <InspectionDetail />
-                </ProtectedRoute>
-              }
-            />
-
-
             <Route
               path="/upload"
               element={
@@ -115,6 +102,31 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TransformerRecordDetail />
+                </ProtectedRoute>
+              }
+            />
+            {/* New inspection routes */}
+            <Route
+              path="/inspections/list/:transformerId"
+              element={
+                <ProtectedRoute>
+                  <InspectionList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inspections/:id"
+              element={
+                <ProtectedRoute>
+                  <InspectionDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inspections/add/:transformerId"
+              element={
+                <ProtectedRoute>
+                  <InspectionUpload />
                 </ProtectedRoute>
               }
             />

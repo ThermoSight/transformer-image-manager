@@ -52,6 +52,11 @@ public class TransformerRecordService {
 
         List<Image> imageEntities = new ArrayList<>();
         for (ImageDTO imgDto : images) {
+            // Only allow baseline images for transformer creation
+            if (!"Baseline".equals(imgDto.type)) {
+                throw new IllegalArgumentException("Only baseline images are allowed for transformer creation");
+            }
+
             String fileName = System.currentTimeMillis() + "_" + imgDto.file.getOriginalFilename();
             Path uploadPath = Paths.get(uploadDirectory);
             if (!Files.exists(uploadPath))
@@ -62,7 +67,7 @@ public class TransformerRecordService {
             Image image = new Image();
             image.setFilePath("/uploads/" + fileName);
             image.setType(imgDto.type);
-            image.setWeatherCondition("Baseline".equals(imgDto.type) ? imgDto.weatherCondition : null);
+            image.setWeatherCondition(imgDto.weatherCondition);
             image.setTransformerRecord(transformerRecord);
 
             imageEntities.add(image);
@@ -85,6 +90,7 @@ public class TransformerRecordService {
         TransformerRecord transformerRecord = transformerRecordRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transformer record not found"));
 
+        // Delete associated images
         for (Image image : transformerRecord.getImages()) {
             try {
                 Path filePath = Paths.get(uploadDirectory, image.getFilePath().replace("/uploads/", ""));
@@ -143,6 +149,11 @@ public class TransformerRecordService {
             List<Image> imageEntities = transformerRecord.getImages();
 
             for (ImageDTO imgDto : newImages) {
+                // Only allow baseline images for transformer updates
+                if (!"Baseline".equals(imgDto.type)) {
+                    throw new IllegalArgumentException("Only baseline images are allowed for transformer updates");
+                }
+
                 String fileName = System.currentTimeMillis() + "_" + imgDto.file.getOriginalFilename();
                 Path uploadPath = Paths.get(uploadDirectory);
                 if (!Files.exists(uploadPath))
@@ -153,7 +164,7 @@ public class TransformerRecordService {
                 Image image = new Image();
                 image.setFilePath("/uploads/" + fileName);
                 image.setType(imgDto.type);
-                image.setWeatherCondition("Baseline".equals(imgDto.type) ? imgDto.weatherCondition : null);
+                image.setWeatherCondition(imgDto.weatherCondition);
                 image.setTransformerRecord(transformerRecord);
 
                 imageEntities.add(image);

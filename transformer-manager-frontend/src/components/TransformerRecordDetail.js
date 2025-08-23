@@ -12,7 +12,6 @@ import {
   Tab,
   Tabs,
   Image,
-  Form
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -24,6 +23,8 @@ import {
   faClock,
   faBolt,
   faHashtag,
+  faEye,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -44,6 +45,7 @@ const TransformerRecordDetail = () => {
   const navigate = useNavigate();
   const { token, isAuthenticated } = useAuth();
   const [transformerRecord, setTransformerRecord] = useState(null);
+  const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -51,22 +53,26 @@ const TransformerRecordDetail = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
 
-  const [inspections, setInspections] = useState([]);
-  const [showAddInspection, setShowAddInspection] = useState(false);
-  const [inspectionDescription, setInspectionDescription] = useState("");
-  const [inspectionDate, setInspectionDate] = useState(""); // Add state for date
-
   useEffect(() => {
-    const fetchTransformerRecord = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `http://localhost:8080/api/transformer-records/${id}`,
-          isAuthenticated
-            ? { headers: { Authorization: `Bearer ${token}` } }
-            : {}
-        );
-        setTransformerRecord(response.data);
+        const [recordResponse, inspectionsResponse] = await Promise.all([
+          axios.get(
+            `http://localhost:8080/api/transformer-records/${id}`,
+            isAuthenticated
+              ? { headers: { Authorization: `Bearer ${token}` } }
+              : {}
+          ),
+          axios.get(
+            `http://localhost:8080/api/inspections/transformer/${id}`,
+            isAuthenticated
+              ? { headers: { Authorization: `Bearer ${token}` } }
+              : {}
+          ),
+        ]);
+        setTransformerRecord(recordResponse.data);
+        setInspections(inspectionsResponse.data);
         setError("");
       } catch (err) {
         setError("Failed to fetch transformer record details");
@@ -75,26 +81,7 @@ const TransformerRecordDetail = () => {
       }
     };
 
-    fetchTransformerRecord();
-  }, [id, token, isAuthenticated]);
-
-  // Fetch inspections for this transformer
-  useEffect(() => {
-    const fetchInspections = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/api/inspections/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setInspections(response.data);
-      } catch (err) {
-        console.error("Failed to fetch inspections", err);
-      }
-    };
-
-    fetchInspections();
+    fetchData();
   }, [id, token]);
 
   const handleDeleteImage = async (imageId) => {
@@ -116,50 +103,6 @@ const TransformerRecordDetail = () => {
       setShowDeleteModal(false);
     }
   };
-
-  const handleAddInspection = async () => {
-    if (!inspectionDescription.trim()) {
-      alert("Please enter an inspection description");
-      return;
-    }
-
-    if (!inspectionDate) {
-      alert("Please select an inspection date");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/api/inspections",
-        null,
-        {
-          params: {
-            transformerId: id,
-            description: inspectionDescription,
-            inspectionDate: inspectionDate, // Add date to params
-          },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setInspections([...inspections, response.data]);
-      setInspectionDescription("");
-      setInspectionDate(""); // Reset date
-      setShowAddInspection(false);
-    } catch (err) {
-      console.error("Failed to add inspection", err);
-    }
-  };
-
-  // Separate images by type
-  const baselineImages =
-    transformerRecord?.images?.filter((image) => image.type === "Baseline") ||
-    [];
-
-  const maintenanceImages =
-    transformerRecord?.images?.filter(
-      (image) => image.type === "Maintenance"
-    ) || [];
 
   if (loading) {
     return (
@@ -214,8 +157,11 @@ const TransformerRecordDetail = () => {
               </div>
             </div>
             <div>
-              <Badge bg="info" className="fs-6">
-                {transformerRecord.images?.length || 0} Images
+              <Badge bg="info" className="fs-6 me-2">
+                {transformerRecord.images?.length || 0} Baseline Images
+              </Badge>
+              <Badge bg="success" className="fs-6">
+                {inspections.length} Inspections
               </Badge>
             </div>
           </div>
@@ -291,203 +237,144 @@ const TransformerRecordDetail = () => {
             </Col>
           </Row>
 
-          <Tabs defaultActiveKey="images" className="mb-3">
-            <Tab eventKey="images" title="Images">
+          <Tabs defaultActiveKey="baseline" className="mb-3">
+            <Tab eventKey="baseline" title="Baseline Images">
               {transformerRecord.images &&
               transformerRecord.images.length > 0 ? (
                 <Row className="mt-4">
-                  {/* Baseline Images - Left Side */}
-                  <Col md={6}>
-                    <h4 className="mb-3 text-center">Baseline Images</h4>
-                    {baselineImages.length > 0 ? (
-                      <Row className="g-3">
-                        {baselineImages.map((image) => (
-                          <Col key={image.id} xs={12}>
-                            <Card className="h-100">
-                              <div style={{ position: "relative" }}>
-                                <Image
-                                  src={`http://localhost:8080${image.filePath}`}
-                                  alt={image.type}
-                                  fluid
-                                  style={{
-                                    height: "250px",
-                                    width: "100%",
-                                    objectFit: "cover",
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() => {
-                                    setPreviewImage(
-                                      `http://localhost:8080${image.filePath}`
-                                    );
-                                    setShowPreview(true);
-                                  }}
-                                />
-                              </div>
-                              <Card.Body>
-                                <div className="d-flex justify-content-between align-items-start">
-                                  <div>
-                                    <strong>Type:</strong> {image.type}
-                                    {image.weatherCondition && (
-                                      <div>
-                                        <strong>Weather:</strong>{" "}
-                                        {image.weatherCondition}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="text-muted small text-end">
-                                    <FontAwesomeIcon
-                                      icon={faClock}
-                                      className="me-1"
-                                    />
-                                    {new Date(
-                                      image.uploadTime || image.createdAt
-                                    ).toLocaleString()}
-                                  </div>
+                  {transformerRecord.images.map((image) => (
+                    <Col key={image.id} md={6} lg={4} className="mb-4">
+                      <Card className="h-100">
+                        <div style={{ position: "relative" }}>
+                          <Image
+                            src={`http://localhost:8080${image.filePath}`}
+                            alt={image.type}
+                            fluid
+                            style={{
+                              height: "250px",
+                              width: "100%",
+                              objectFit: "cover",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setPreviewImage(
+                                `http://localhost:8080${image.filePath}`
+                              );
+                              setShowPreview(true);
+                            }}
+                          />
+                        </div>
+                        <Card.Body>
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div>
+                              <strong>Type:</strong> {image.type}
+                              {image.weatherCondition && (
+                                <div>
+                                  <strong>Weather:</strong>{" "}
+                                  {image.weatherCondition}
                                 </div>
-                              </Card.Body>
-                            </Card>
-                          </Col>
-                        ))}
-                      </Row>
-                    ) : (
-                      <Alert variant="info" className="text-center">
-                        No Baseline images available
-                      </Alert>
-                    )}
-                  </Col>
-
-                  {/* Maintenance Images - Right Side */}
-                  <Col md={6}>
-                    <h4 className="mb-3 text-center">Maintenance Images</h4>
-                    {maintenanceImages.length > 0 ? (
-                      <Row className="g-3">
-                        {maintenanceImages.map((image) => (
-                          <Col key={image.id} xs={12}>
-                            <Card className="h-100">
-                              <div style={{ position: "relative" }}>
-                                <Image
-                                  src={`http://localhost:8080${image.filePath}`}
-                                  alt={image.type}
-                                  fluid
-                                  style={{
-                                    height: "250px",
-                                    width: "100%",
-                                    objectFit: "cover",
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() => {
-                                    setPreviewImage(
-                                      `http://localhost:8080${image.filePath}`
-                                    );
-                                    setShowPreview(true);
-                                  }}
-                                />
-                              </div>
-                              <Card.Body>
-                                <div className="d-flex justify-content-between align-items-start">
-                                  <div>
-                                    <strong>Type:</strong> {image.type}
-                                  </div>
-                                  <div className="text-muted small text-end">
-                                    <FontAwesomeIcon
-                                      icon={faClock}
-                                      className="me-1"
-                                    />
-                                    {new Date(
-                                      image.uploadTime || image.createdAt
-                                    ).toLocaleString()}
-                                  </div>
-                                </div>
-                              </Card.Body>
-                            </Card>
-                          </Col>
-                        ))}
-                      </Row>
-                    ) : (
-                      <Alert variant="info" className="text-center">
-                        No Maintenance images available
-                      </Alert>
-                    )}
-                  </Col>
+                              )}
+                            </div>
+                            <div className="text-muted small text-end">
+                              <FontAwesomeIcon
+                                icon={faClock}
+                                className="me-1"
+                              />
+                              {new Date(
+                                image.uploadTime || image.createdAt
+                              ).toLocaleString()}
+                            </div>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
                 </Row>
               ) : (
                 <Alert variant="info" className="mt-3">
-                  No images in this transformer record
+                  No baseline images in this transformer record
                 </Alert>
               )}
             </Tab>
-
             <Tab eventKey="inspections" title="Inspections">
-              <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
                 <h4>Inspections</h4>
-                <Button variant="primary" onClick={() => setShowAddInspection(true)}>
-                  + Add Inspection
-                </Button>
+                {isAuthenticated && (
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate(`/inspections/add/${id}`)}
+                  >
+                    <FontAwesomeIcon icon={faPlus} className="me-2" />
+                    Add Inspection
+                  </Button>
+                )}
               </div>
 
               {inspections.length > 0 ? (
-                inspections.map((inspection) => (
-                  <Card key={inspection.id} className="mb-3">
-                    <Card.Body className="d-flex justify-content-between align-items-center">
-                      <div>
-                        <strong>Date:</strong> {new Date(inspection.inspectionDate).toLocaleDateString()} {/* Display date */}
-                        <br />
-                        <strong>Description:</strong> {inspection.description}
-                      </div>
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => navigate(`/inspections/${inspection.id}`)}
-                      >
-                        View & Upload Image
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                ))
+                <Row>
+                  {inspections.map((inspection) => (
+                    <Col key={inspection.id} md={6} lg={4} className="mb-4">
+                      <Card className="h-100">
+                        <Card.Body>
+                          <Card.Title className="d-flex justify-content-between align-items-start">
+                            Inspection #{inspection.id}
+                            <Badge bg="primary">
+                              {new Date(
+                                inspection.createdAt
+                              ).toLocaleDateString()}
+                            </Badge>
+                          </Card.Title>
+
+                          <div className="d-flex justify-content-between text-muted mb-3">
+                            <div>
+                              <FontAwesomeIcon icon={faUser} className="me-2" />
+                              <small>
+                                {inspection.conductedBy?.displayName ||
+                                  "Unknown"}
+                              </small>
+                            </div>
+                          </div>
+
+                          {inspection.notes && (
+                            <Card.Text className="mb-3">
+                              {inspection.notes.length > 100
+                                ? `${inspection.notes.substring(0, 100)}...`
+                                : inspection.notes}
+                            </Card.Text>
+                          )}
+
+                          <div className="d-flex justify-content-between align-items-center">
+                            <Badge bg="secondary">
+                              {inspection.images?.length || 0} maintenance
+                              images
+                            </Badge>
+
+                            <div>
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() =>
+                                  navigate(`/inspections/${inspection.id}`)
+                                }
+                              >
+                                <FontAwesomeIcon icon={faEye} />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
               ) : (
-                <Alert variant="info">No inspections yet.</Alert>
+                <Alert variant="info" className="mt-3">
+                  No inspections for this transformer yet
+                </Alert>
               )}
             </Tab>
           </Tabs>
         </Card.Body>
       </Card>
-
-      {/* Add Inspection Modal */}
-      <Modal show={showAddInspection} onHide={() => setShowAddInspection(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add New Inspection</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Inspection Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={inspectionDate}
-                onChange={(e) => setInspectionDate(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter inspection description"
-                value={inspectionDescription}
-                onChange={(e) => setInspectionDescription(e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAddInspection(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleAddInspection}>
-            Add Inspection
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       {/* Delete Image Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

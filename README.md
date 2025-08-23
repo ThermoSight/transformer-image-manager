@@ -4,7 +4,7 @@
 
 ## To Do
 
-- [ ]
+- Phase 1 completed.
 
 ---
 
