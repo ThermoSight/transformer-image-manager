@@ -1,8 +1,10 @@
 package com.example.transformer_manager_backkend.config;
 
-import com.example.transformer_manager_backkend.service.AdminDetailsService;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,9 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.http.HttpMethod;
 
-import java.util.List;
+import com.example.transformer_manager_backkend.service.AdminDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -34,6 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // FIX: Use simpler pattern or disable CSRF completely for development
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
@@ -42,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/transformer-records").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/transformer-records/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/transformer-records/**").hasRole("ADMIN")
+                        .requestMatchers("/api/inspections/**").hasRole("ADMIN")
                         // Anyone can list or view transformer records
                         .requestMatchers(HttpMethod.GET, "/api/transformer-records").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transformer-records/**").permitAll()

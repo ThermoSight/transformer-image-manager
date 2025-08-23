@@ -17,6 +17,10 @@ import TransformerRecordDetail from "./components/TransformerRecordDetail";
 import ProtectedRoute from "./ProtectedRoute";
 import MoodleNavbar from "./components/MoodleNavbar";
 import "./App.css";
+import InspectionDetail from "./components/InspectionDetail";
+
+<Route path="/inspections/:id" element={<InspectionDetail />} />
+
 
 // Component to handle title changes
 function TitleHandler() {
@@ -39,6 +43,13 @@ function TitleHandler() {
       default:
         if (location.pathname.startsWith("/records/")) {
           document.title = "Record Details - ThermoSight TMS";
+
+
+        } else if (location.pathname.startsWith("/inspections/")) {
+
+          document.title = "Inspection Details - ThermoSight TMS";
+
+
         } else {
           document.title = "ThermoSight TMS";
         }
@@ -79,6 +90,18 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+
+            <Route
+              path="/inspections/:id"
+              element={
+                <ProtectedRoute>
+                  <InspectionDetail />
+                </ProtectedRoute>
+              }
+            />
+
+
             <Route
               path="/upload"
               element={
