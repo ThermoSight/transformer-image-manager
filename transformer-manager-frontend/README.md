@@ -1,70 +1,114 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Transformer Manager — Frontend (React)
 
-## Available Scripts
+React frontend for the Transformer Thermal Inspection System. Provides a user interface for managing transformer records and thermal images, connecting to the Spring Boot backend.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Setup
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
+- **Node.js 18+** ([Download Node.js](https://nodejs.org/))
+- **npm** (comes with Node.js)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-### `npm test`
+### 2. Configuration
+Update the API base URL in `src/axiosConfig.js` if needed:
+```javascript
+baseURL: 'http://localhost:8080/api' // Default Spring Boot port
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 3. Run Development Server
+```bash
+npm start
+```
+Application opens at `http://localhost:3000`
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+##  Project Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+transformer-manager-frontend/
+├── public/                 # Static files
+├── src/
+│   ├── components/         # Reusable React components
+│   ├── App.js             # Main application component
+│   ├── App.css            # Application styles
+│   ├── AuthContext.js     # Authentication context provider
+│   ├── axiosConfig.js     # HTTP client configuration
+│   ├── index.js           # Application entry point
+│   ├── Login.js           # Login component
+│   ├── ProtectedRoute.js  # Route protection component
+│   └── useDocumentTitle.js # Custom hook
+├── package.json
+└── README.md
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+##  Implemented Features
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### **Authentication & Security**
+- **JWT-based Login** (`Login.js`) - User authentication
+- **Auth Context** (`AuthContext.js`) - Global state management
+- **Protected Routes** (`ProtectedRoute.js`) - Route guarding
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### **HTTP Client Configuration**
+- **Axios Configuration** (`axiosConfig.js`) - API setup
+- **Automatic Token Attachment** - Adds JWT to requests
+- **Error Handling** - API error management
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### **Component Architecture**
+- **Modular Components** (`components/` folder) - Reusable UI
+- **Custom Hooks** (`useDocumentTitle.js`) - Functionality reuse
+- **CSS Styling** (`App.css`) - Component styling
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## API Integration
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Connects to backend endpoints:
+- `POST /api/auth/login` - User authentication
+- `GET /api/transformers` - Fetch transformers
+- `POST /api/transformers` - Create transformer
+- `PUT /api/transformers/{id}` - Update transformer
+- `DELETE /api/transformers/{id}` - Delete transformer
+- `POST /api/transformers/{id}/images` - Upload images
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
+## Technical Stack
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **React 18** - Frontend framework
+- **React Context API** - State management
+- **Axios** - HTTP client for API calls
+- **CSS3** - Styling and responsive design
+- **Create React App** - Build toolchain
 
-### Analyzing the Bundle Size
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## ⚠️ Known Limitations
 
-### Advanced Configuration
+- **CORS Configuration** - Ensure backend allows `http://localhost:3000`
+- **Environment Variables** - API URLs need configuration for production
+- **Error Handling** - Comprehensive error handling to be implemented
+- **Loading States** - Loading indicators needed for better UX
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+---
 
-### Deployment
+##  Next Steps
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Implement transformer list and detail views
+- Create forms for adding/editing transformers
+- Build image upload interface
+- Add responsive navigation menu
+- Implement logout functionality
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
