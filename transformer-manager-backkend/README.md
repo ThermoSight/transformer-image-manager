@@ -19,9 +19,9 @@ Auth is JWT‑based; data is stored in PostgreSQL; files are stored on disk.
 Create a dedicated user and database (recommended):
 
 ```sql
--- Run as postgres superuser (e.g., via psql or pgAdmin)
-CREATE USER transformer_user WITH PASSWORD 'ChangeMe_Strong!123';
-CREATE DATABASE transformer_db1 OWNER transformer_user;
+-- Run as postgres superuser (e.g., via pgAdmin)
+CREATE USER progres WITH PASSWORD 'add_your_pw';
+CREATE DATABASE transformer_db OWNER progres;
 
 -- (Optional) If schema already exists and you need grants:
 -- \c transformer_db1
