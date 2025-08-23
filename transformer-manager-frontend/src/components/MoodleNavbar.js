@@ -47,10 +47,10 @@ const MoodleNavbar = () => {
                   <FontAwesomeIcon icon={faClipboardCheck} className="me-1" />
                   Inspections
                 </Nav.Link>
-                <Nav.Link as={Link} to="/upload">
-                  <FontAwesomeIcon icon={faUpload} className="me-1" />
-                  Upload
-                </Nav.Link>
+                // <Nav.Link as={Link} to="/upload">
+                //   <FontAwesomeIcon icon={faUpload} className="me-1" />
+                //   Upload
+                // </Nav.Link>
               </>
             )}
           </Nav>
