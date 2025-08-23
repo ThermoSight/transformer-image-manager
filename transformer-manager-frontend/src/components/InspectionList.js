@@ -194,43 +194,49 @@ const InspectionList = () => {
       {/* Transformer Selection */}
       <Card className="mb-4">
         <Card.Body>
+          {/* Change: Use a single Row and two Columns to align horizontally */}
           <Row className="g-3 align-items-center">
             <Col md={6}>
               <Form.Label>Select Transformer</Form.Label>
-              <Dropdown>
-                <Dropdown.Toggle
-                  variant="outline-secondary"
-                  className="w-100 text-start"
-                >
-                  {selectedTransformer ? (
-                    <>
-                      {selectedTransformer.name}
-                      {selectedTransformer.poleNo &&
-                        ` (Pole #${selectedTransformer.poleNo})`}
-                    </>
-                  ) : (
-                    "Select a transformer"
-                  )}
-                  <FontAwesomeIcon icon={faChevronDown} className="ms-2" />
-                </Dropdown.Toggle>
-                <Dropdown.Menu className="w-100">
-                  {transformers.map((transformer) => (
-                    <Dropdown.Item
-                      key={transformer.id}
-                      onClick={() => setSelectedTransformer(transformer)}
-                      active={
-                        selectedTransformer &&
-                        selectedTransformer.id === transformer.id
-                      }
-                    >
-                      {transformer.name}
-                      {transformer.poleNo && ` (Pole #${transformer.poleNo})`}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
+              {/* Change: Use InputGroup with Dropdown to align better */}
+              <InputGroup>
+                {/* Change: Remove the FontAwesomeIcon from here, as the dropdown already provides an arrow. */}
+                <Dropdown className="w-100">
+                  <Dropdown.Toggle
+                    variant="outline-secondary"
+                    className="w-100 text-start"
+                  >
+                    {selectedTransformer ? (
+                      <>
+                        {selectedTransformer.name}
+                        {selectedTransformer.poleNo &&
+                          ` (Pole #${selectedTransformer.poleNo})`}
+                      </>
+                    ) : (
+                      "Select a transformer"
+                    )}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="w-100">
+                    {transformers.map((transformer) => (
+                      <Dropdown.Item
+                        key={transformer.id}
+                        onClick={() => setSelectedTransformer(transformer)}
+                        active={
+                          selectedTransformer &&
+                          selectedTransformer.id === transformer.id
+                        }
+                      >
+                        {transformer.name}
+                        {transformer.poleNo && ` (Pole #${transformer.poleNo})`}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </InputGroup>
             </Col>
             <Col md={6}>
+              {/* Change: Add Form.Label for consistency and proper spacing */}
+              <Form.Label>Search</Form.Label>
               <InputGroup>
                 <Form.Control
                   type="text"
