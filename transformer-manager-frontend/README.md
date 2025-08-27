@@ -30,43 +30,26 @@ Application opens at `http://localhost:3000`
 
 ---
 
-##  Project Structure
+## Implemented Features
 
-```
-transformer-manager-frontend/
-├── public/                 # Static files
-├── src/
-│   ├── components/         # Reusable React components
-│   ├── App.js             # Main application component
-│   ├── App.css            # Application styles
-│   ├── AuthContext.js     # Authentication context provider
-│   ├── axiosConfig.js     # HTTP client configuration
-│   ├── index.js           # Application entry point
-│   ├── Login.js           # Login component
-│   ├── ProtectedRoute.js  # Route protection component
-│   └── useDocumentTitle.js # Custom hook
-├── package.json
-└── README.md
-```
+### Authentication & Security
+- **JWT-based Login** (`Login.js`) – User authentication  
+- **Auth Context** (`AuthContext.js`) – Global state management  
+- **Protected Routes** (`ProtectedRoute.js`) – Route guarding  
 
 ---
 
-##  Implemented Features
+### HTTP Client Configuration
+- **Axios Configuration** (`axiosConfig.js`) – API setup  
+- **Automatic Token Attachment** – Adds JWT to requests  
+- **Error Handling** – API error management  
 
-### **Authentication & Security**
-- **JWT-based Login** (`Login.js`) - User authentication
-- **Auth Context** (`AuthContext.js`) - Global state management
-- **Protected Routes** (`ProtectedRoute.js`) - Route guarding
+---
 
-### **HTTP Client Configuration**
-- **Axios Configuration** (`axiosConfig.js`) - API setup
-- **Automatic Token Attachment** - Adds JWT to requests
-- **Error Handling** - API error management
-
-### **Component Architecture**
-- **Modular Components** (`components/` folder) - Reusable UI
-- **Custom Hooks** (`useDocumentTitle.js`) - Functionality reuse
-- **CSS Styling** (`App.css`) - Component styling
+### Component Architecture
+- **Modular Components** (`components/` folder) – Reusable UI  
+- **Custom Hooks** (`useDocumentTitle.js`) – Functionality reuse  
+- **CSS Styling** (`App.css`) – Component styling  
 
 ---
 
@@ -82,18 +65,6 @@ Connects to backend endpoints:
 
 ---
 
-## Technical Stack
-
-- **React 18** - Frontend framework
-- **React Context API** - State management
-- **Axios** - HTTP client for API calls
-- **CSS3** - Styling and responsive design
-- **Create React App** - Build toolchain
-
-
-
----
-
 ## ⚠️ Known Limitations
 
 - **CORS Configuration** - Ensure backend allows `http://localhost:3000`
@@ -101,14 +72,5 @@ Connects to backend endpoints:
 - **Error Handling** - Comprehensive error handling to be implemented
 - **Loading States** - Loading indicators needed for better UX
 
----
-
-##  Next Steps
-
-- Implement transformer list and detail views
-- Create forms for adding/editing transformers
-- Build image upload interface
-- Add responsive navigation menu
-- Implement logout functionality
 
 ---
