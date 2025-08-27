@@ -1,201 +1,140 @@
-# transformer-image-manager
+# ThermoSight – Transformer Thermal Inspection
+
+ThermoSight is a web platform for managing transformer thermal inspections. It helps utilities move beyond manual, error-prone image checks by providing:
+
+- Transformer records (ID, location, capacity)  
+- Upload & management of baseline/maintenance thermal images  
+- Image tagging by environmental conditions (sunny, cloudy, rainy)  
+
+## Future Plans
+- Automated anomaly detection with computer vision  
+- Manual validation & correction of results  
+- Digital maintenance record generation  
 
 ---
 
-## To Do
+## Overview
 
-- Phase 1 completed.
+ThermoSight is a full-stack web application with a **React frontend** and **Spring Boot backend** using **PostgreSQL**.
 
----
-
-# Project Setup Guide
-
-## After Cloning the Repository
-
----
-# Transformer Thermal Inspection System
-
-A full-stack web application for automating thermal inspection workflows of distribution transformers. Built for the EN3350 Software Design Competition.
-
-## 🚀 Quick Start
-
-### Prerequisites
-- **Java 17+** ([Download](https://adoptium.net/))
-- **Node.js 18+** ([Download](https://nodejs.org/))
-- **PostgreSQL 14+** ([Download](https://www.postgresql.org/download/))
-- **Maven 3.9+** ([Download](https://maven.apache.org/download.cgi))
+- **Frontend:** React  
+- **Backend:** Spring Boot handles business logic and APIs  
+- **Database:** PostgreSQL stores system data  
 
 ---
 
-##  Backend Setup (Spring Boot)
+## Backend Setup (Spring Boot)
 
-### 1. Database Setup
+### 1. Prerequisites
+- Java 17+  ([Download Oracle JDK](https://www.oracle.com/java/technologies/downloads/#java17)
+- Maven 3.9+ ([Download Apache Maven](https://maven.apache.org/download.cgi))    
+- PostgreSQL 14+ ([Download PostgreSQL](https://www.postgresql.org/download/))   
+
+### 2. Create Database in postgres (PostgreSQL)
 ```sql
-CREATE DATABASE transformer_db;
-CREATE USER transformer_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE transformer_db TO transformer_user;
+CREATE USER postgres
+PASSWORD 'add_your_pw';
+CREATE DATABASE transformer_db
+OWNER postgres;
 ```
-2. Configuration
-
-Edit transformer-manager-backkend/src/main/resources/application.properties:
-properties
-```sql
-spring.datasource.url=jdbc:postgresql://localhost:5432/transformer_db
-spring.datasource.username=transformer_user
-spring.datasource.password=your_password
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
-spring.servlet.multipart.max-file-size=5MB
-spring.servlet.multipart.max-request-size=5MB
-upload.directory=./uploads
+### 3. Configuration
+- In that file, change the following codes according to the database, username and password you created in Postgres:
+-- Edit src/main/resources/application.properties:
+```bash
+  spring.datasource.url=jdbc:postgresql://localhost:5432/transformer_db
+  spring.datasource.username=postgres
+  spring.datasource.password=add_your_pw
 ```
-3. Run Backend
-bash
-```sql
-cd transformer-manager-backkend
-mvn spring-boot:run
+### 4.Run Application
+
+Run TransformerManagerBackkendApplication.java in:
+```sq1
+transformer_manager_backkend/TransformerManagerBackkendApplication.java
 ```
-Backend starts at: http://localhost:8080
+
+> **Note:** If port **8080** is already in use, free it before running the backend.  
+> ```bash
+> netstat -ano | findstr :8080
+> taskkill /PID <pid> /F
+> ```
+
+---
 
 ## Frontend Setup (React)
-1. Install Dependencies
 
-```sql
-cd transformer-manager-frontend
+### 1. Prerequisites
+- Node.js 18+   ([Download Node.js](https://nodejs.org/en/download/))  
+- npm (comes with Node.js)  
+
+### 2. Install Dependencies
+- In the frontend project folder, run:
+```bash
 npm install
 ```
+### 3. Configuration
 
-2. Configure API URL
-```sql
-Edit src/axiosConfig.js:
-javascript
-```
+- Update the API base URL in src/axiosConfig.js if needed:
+```sq1
 baseURL: 'http://localhost:8080/api'
-
-3. Run Frontend
-```sql
+```
+### 4. Run Development Server
+```sq1
 npm start
 ```
-Frontend starts at: http://localhost:3000
 
-## Project Structure
+The application will open at: **http://localhost:3000**
 
-
-transformer-image-manager/
-├── transformer-manager-backkend/    # Spring Boot API
-│   ├── config/          # Security & JWT configuration
-│   ├── controller/      # REST API endpoints
-│   ├── entity/          # Database models
-│   ├── repository/      # Data access layer
-│   └── service/         # Business logic
-└── transformer-manager-frontend/    # React app
-    ├── components/      # UI components
-    ├── AuthContext.js   # Authentication management
-    └── axiosConfig.js   # API configuration
+---
 
 ## Implemented Features
-(Backend)
 
-    JWT authentication with Spring Security
+- **Transformers and Images CRUD** (Spring Boot REST APIs with JPA)  
+- **Test data** included: five transformers with baseline images + seed data for initialization  
+### Webpages 
+- **Admin page**  
+- **Transformer page** (shows transformer records)  
+- **Image management page** (baseline and maintenance images linked to transformers)  
+### Creating
+- **Transformers:** Through the Transformer page, *Add New Transformer* (ID, location, capacity)
+- **Inspections:** Through the Transformer or from the Inspection page *Add New Inspection*
+### Updating
+- Each transformer record can be updated (details and baseline images)  
+- Baseline/maintenance images can be added or removed for a transformer  
+### Deleting
+- Deleting a transformer will delete all its associated images  
+- Deleting an image will remove it from the transformer’s record  
+### Search / Filters
+- **Transformers:** by ID / location / capacity  
+- **Images:** filter by transformer and environmental condition (sunny, cloudy, rainy)  
+### Validation
+- Adding/Editing images requires the transformer to exist  
+- Baseline images must be categorized by environmental condition  
 
-    PostgreSQL database integration
+## Additional Features
 
-    RESTful APIs for transformer management
+### Frontend
+- **Authentication & Security:** JWT-based login with global Auth Context and protected routes  
+- **HTTP Client:** Axios setup with automatic token attachment and error handling  
+- **Component Architecture:** Modular components, custom hooks, and CSS styling for reusable UI  
 
-    Image upload functionality
-
-    Automatic admin user creation
-
-(Frontend)
-
-    Login system with JWT tokens
-
-    Protected routes and authentication
-
-    API integration with Axios
-
-    Responsive user interface
-
- API Endpoints
-
-    POST /api/auth/login - User login
-
-    GET /api/transformers - List transformers
-
-    POST /api/transformers - Create transformer
-
-    POST /api/transformers/{id}/images - Upload images
-
-⚠ Important Notes
-
-    Backend runs on port 8080, frontend on port 3000
-
-    Ensure PostgreSQL is running before starting backend
-
-    Default admin users are created automatically
-
-    Check CORS configuration if connection issues occur
-
-
-
-----
-### Backend Setup (Spring Boot)
-
-1. Navigate to the backend directory:
-
-```bash
-cd transformer-manager-backkend
-```
-
-2. Open `src/main/resources/application.properties`.
-
-3. Update the PostgreSQL password property:
-
-```properties
-spring.datasource.password=your_real_password_here
-```
-
-4. Run the backend application:
-
-- Using your IDE, run the `TransformerManagerBackkendApplication.java` file located at:
-
-```
-transformer-manager-backkend/src/main/java/com/example/transformer_manager_backkend/TransformerManagerBackkendApplication.java
-```
+### Backend
+- **Core Setup:** Spring Boot entry point, Maven structure, and Wrapper  
+- **Architecture:** Clean layered design — `config`, `controller`, `entity`, `repository`, `service`  
+- **Database:** PostgreSQL with JPA/Hibernate, HikariCP, auto schema generation  
+- **Security:** JWT authentication, BCrypt password hashing, role-based access control  
+- **Config & Deployment:** Properties, profiles, custom configs, Maven build, JAR packaging, tests  
 
 ---
 
-### Frontend Setup (React)
+## Limitations
 
-1. Open a new terminal window/tab.
+### Frontend
+- **CORS Configuration:** Backend must allow `http://localhost:3000`  
+- **Environment Variables:** API URLs must be configured for production  
+- **Error Handling:** Comprehensive error handling not yet implemented  
+- **Loading States:** Loading indicators still needed for better UX  
 
-2. Navigate to the frontend directory:
-
-```bash
-cd transformer-manager-frontend
-```
-
-3. Install frontend dependencies:
-
-```bash
-npm install
-```
-
-4. Start the frontend server:
-
-```bash
-npm start
-```
-
----
-
-## Summary
-
-| Component | Location                       | Start Command                                    |
-| --------- | ------------------------------ | ------------------------------------------------ |
-| Backend   | `transformer-manager-backend`  | Run `TransformerManagerBackkendApplication.java` |
-| Frontend  | `transformer-manager-frontend` | `npm install` then `npm start`                   |
-
----
+### Backend
+- **Secrets in Config:** Example credentials in `application.properties`; should use environment variables or a secrets manager in production  
+- **Open-in-View:** Enabled by default; consider disabling for production to avoid lazy-load issues during view rendering  
+- **Local File Storage:** Images stored on local disk; for production use S3/GCS/Azure Blob with signed URLs + CDN  
