@@ -57,7 +57,8 @@ public class TransformerRecordService {
                 throw new IllegalArgumentException("Only baseline images are allowed for transformer creation");
             }
 
-            String fileName = System.currentTimeMillis() + "_" + imgDto.file.getOriginalFilename();
+            // REMOVED: System.currentTimeMillis() + "_" prefix
+            String fileName = imgDto.file.getOriginalFilename();
             Path uploadPath = Paths.get(uploadDirectory);
             if (!Files.exists(uploadPath))
                 Files.createDirectories(uploadPath);
@@ -154,7 +155,8 @@ public class TransformerRecordService {
                     throw new IllegalArgumentException("Only baseline images are allowed for transformer updates");
                 }
 
-                String fileName = System.currentTimeMillis() + "_" + imgDto.file.getOriginalFilename();
+                // REMOVED: System.currentTimeMillis() + "_" prefix
+                String fileName = imgDto.file.getOriginalFilename();
                 Path uploadPath = Paths.get(uploadDirectory);
                 if (!Files.exists(uploadPath))
                     Files.createDirectories(uploadPath);

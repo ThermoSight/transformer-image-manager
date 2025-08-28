@@ -49,7 +49,8 @@ public class InspectionService {
         List<Image> imageEntities = new ArrayList<>();
         if (maintenanceImages != null && !maintenanceImages.isEmpty()) {
             for (MultipartFile imageFile : maintenanceImages) {
-                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                // REMOVED: System.currentTimeMillis() + "_" prefix
+                String fileName = imageFile.getOriginalFilename();
                 Path uploadPath = Paths.get(uploadDirectory);
                 if (!Files.exists(uploadPath))
                     Files.createDirectories(uploadPath);
