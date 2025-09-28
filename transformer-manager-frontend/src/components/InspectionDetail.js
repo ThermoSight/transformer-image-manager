@@ -22,6 +22,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import ZoomImageViewer from "./ZoomImageViewer";
 
 const InspectionDetail = () => {
   const { id } = useParams();
@@ -33,6 +34,7 @@ const InspectionDetail = () => {
   const [error, setError] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [zoomImage, setZoomImage] = useState(null);
 
   useEffect(() => {
     const fetchInspection = async () => {
@@ -200,14 +202,11 @@ const InspectionDetail = () => {
                               height: "250px",
                               width: "100%",
                               objectFit: "cover",
-                              cursor: "pointer",
+                              cursor: "zoom-in",
                             }}
-                            onClick={() => {
-                              setPreviewImage(
-                                `http://localhost:8080${image.filePath}`
-                              );
-                              setShowPreview(true);
-                            }}
+                            onClick={() =>
+                              setZoomImage(`http://localhost:8080${image.filePath}`)
+                            }
                           />
                         </div>
                         <Card.Body>
@@ -260,14 +259,11 @@ const InspectionDetail = () => {
                               height: "250px",
                               width: "100%",
                               objectFit: "cover",
-                              cursor: "pointer",
+                              cursor: "zoom-in",
                             }}
-                            onClick={() => {
-                              setPreviewImage(
-                                `http://localhost:8080${image.filePath}`
-                              );
-                              setShowPreview(true);
-                            }}
+                            onClick={() =>
+                              setZoomImage(`http://localhost:8080${image.filePath}`)
+                            }
                           />
                         </div>
                         <Card.Body>
@@ -325,6 +321,13 @@ const InspectionDetail = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {zoomImage && (
+        <ZoomImageViewer
+          src={zoomImage}
+          onClose={() => setZoomImage(null)}
+        />
+      )}
     </div>
   );
 };
